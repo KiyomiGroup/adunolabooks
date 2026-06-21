@@ -4,10 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV_ITEMS = [
-  { label: "Home",    href: "/",        icon: "⌂" },
-  { label: "Stories", href: "/stories", icon: "📖" },
-  { label: "Poems",   href: "/poems",   icon: "✦" },
-  { label: "About",   href: "/about",   icon: "◎" },
+  { label: "Home",    href: "/" },
+  { label: "Stories", href: "/stories" },
+  { label: "Poems",   href: "/poems" },
+  { label: "About",   href: "/about" },
 ] as const;
 
 export default function TopNav() {
@@ -15,18 +15,11 @@ export default function TopNav() {
 
   return (
     <>
-      {/*
-        Desktop — horizontal bookmark-ribbon nav
-        Feels like a paper ribbon placed across the top of the page,
-        with tab dividers that feel lifted and folded at the edges.
-      */}
+      {/* Desktop — horizontal bookmark-ribbon nav */}
       <header className="top-nav-wrap">
         <nav className="top-nav" aria-label="Main navigation">
-
-          {/* Logo — also acts as the bookmark head */}
           <span className="nav-logo">AdunolaBooks</span>
 
-          {/* Book-divider tabs */}
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -50,9 +43,10 @@ export default function TopNav() {
       </header>
 
       {/*
-        Mobile — bottom navigation bar (journal-paper style)
-        Follows the sketch: horizontal tabs at the bottom of the screen,
-        each with a small icon and label. Active tab shows a bookmark notch.
+        Mobile — side index bookmark tabs
+        Fixed to the right edge, vertical text, pointed left notch.
+        Each tab is a different purple tint like a coloured index divider.
+        Active tab slides out slightly toward the reader.
       */}
       <nav className="mobile-nav" aria-label="Mobile navigation">
         {NAV_ITEMS.map((item) => {
@@ -64,9 +58,6 @@ export default function TopNav() {
               className={`mobile-tab ${isActive ? "active" : ""}`}
               aria-current={isActive ? "page" : undefined}
             >
-              <span className="mobile-tab-icon" aria-hidden="true">
-                {item.icon}
-              </span>
               {item.label}
             </Link>
           );

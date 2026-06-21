@@ -4,10 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV_ITEMS = [
-  { label: "Home",    href: "/" },
-  { label: "About",   href: "/about" },
-  { label: "Stories", href: "/stories" }, /* Sprint 2: chapter system */
-  { label: "Poems",   href: "/poems" },   /* Sprint 2: poetry reader  */
+  { label: "Home",    href: "/",        icon: "⌂" },
+  { label: "Stories", href: "/stories", icon: "📖" },
+  { label: "Poems",   href: "/poems",   icon: "✦" },
+  { label: "About",   href: "/about",   icon: "◎" },
 ] as const;
 
 export default function TopNav() {
@@ -50,10 +50,9 @@ export default function TopNav() {
       </header>
 
       {/*
-        Mobile — side index tabs (journal dividers)
-        Each tab is a physical index divider with a pointed right edge.
-        Slides out slightly on hover like a real tab being pulled.
-        Sprint 2: expand into full slide-out panel with reading state.
+        Mobile — bottom navigation bar (journal-paper style)
+        Follows the sketch: horizontal tabs at the bottom of the screen,
+        each with a small icon and label. Active tab shows a bookmark notch.
       */}
       <nav className="mobile-nav" aria-label="Mobile navigation">
         {NAV_ITEMS.map((item) => {
@@ -65,6 +64,9 @@ export default function TopNav() {
               className={`mobile-tab ${isActive ? "active" : ""}`}
               aria-current={isActive ? "page" : undefined}
             >
+              <span className="mobile-tab-icon" aria-hidden="true">
+                {item.icon}
+              </span>
               {item.label}
             </Link>
           );

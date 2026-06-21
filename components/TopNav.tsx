@@ -15,11 +15,18 @@ export default function TopNav() {
 
   return (
     <>
-      {/* ── Desktop: horizontal book-tab nav ──────────────────────── */}
+      {/*
+        Desktop — horizontal bookmark-ribbon nav
+        Feels like a paper ribbon placed across the top of the page,
+        with tab dividers that feel lifted and folded at the edges.
+      */}
       <header className="top-nav-wrap">
         <nav className="top-nav" aria-label="Main navigation">
+
+          {/* Logo — also acts as the bookmark head */}
           <span className="nav-logo">AdunolaBooks</span>
 
+          {/* Book-divider tabs */}
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -42,8 +49,12 @@ export default function TopNav() {
         </nav>
       </header>
 
-      {/* ── Mobile: side bookmark tabs ─────────────────────────────── */}
-      {/* Sprint 2: expand into full slide-out panel with story index  */}
+      {/*
+        Mobile — side index tabs (journal dividers)
+        Each tab is a physical index divider with a pointed right edge.
+        Slides out slightly on hover like a real tab being pulled.
+        Sprint 2: expand into full slide-out panel with reading state.
+      */}
       <nav className="mobile-nav" aria-label="Mobile navigation">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href;

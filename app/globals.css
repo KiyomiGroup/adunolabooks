@@ -1,0 +1,255 @@
+@import "tailwindcss";
+
+/* ─── AdunolaBooks Design Tokens — Light Purple Theme ────────────────────── */
+:root {
+  /* Core palette */
+  --bg:           #FDFBFF;
+  --bg-soft:      #F3EEFF;
+  --bg-xlight:    #F8F4FF;
+  --white:        #FFFFFF;
+  --ink:          #1E1040;
+  --muted:        #7B6FA0;
+  --border:       rgba(123, 63, 242, 0.15);
+
+  /* Purple family */
+  --purple:       #7B3FF2;
+  --purple-dark:  #5520C8;
+  --purple-mid:   #9B6CF7;
+  --purple-light: #EDE1FF;
+
+  /* Accent colours */
+  --teal:         #38C9B4;
+  --coral:        #FF6F61;
+  --gold:         #F5B942;
+}
+
+/* ─── Base ───────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { background: var(--bg); color: var(--ink); scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  line-height: 1.7;
+  overflow-x: hidden;
+  margin: 0;
+}
+
+/* ─── Typography ─────────────────────────────────────────────────────────── */
+.font-display   { font-family: 'Cormorant Garamond', serif; }
+.font-mono-util { font-family: 'DM Mono', monospace; }
+.text-purple    { color: var(--purple); }
+.text-muted     { color: var(--muted); }
+
+/* ─── Layout ─────────────────────────────────────────────────────────────── */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 3rem;
+}
+
+/* ─── Book-Tab Nav (Desktop) ─────────────────────────────────────────────── */
+/* The top horizontal nav styled like physical book divider tabs */
+.top-nav-wrap {
+  background: var(--bg);
+  padding: 0 3rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 2px solid var(--purple-light);
+}
+
+.top-nav {
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.nav-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--purple-dark);
+  letter-spacing: 0.04em;
+  padding: 1rem 2rem 1rem 0;
+  margin-right: 1rem;
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+/* Tab shape — sits above the border line, active tab bleeds through it */
+.tab-item {
+  position: relative;
+  padding: 0.65rem 1.5rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.tab-item:hover {
+  color: var(--purple);
+  background: var(--bg-xlight);
+  border-color: var(--border);
+}
+
+.tab-item.active {
+  color: var(--purple-dark);
+  background: var(--white);
+  border-color: var(--purple-light);
+  font-weight: 600;
+}
+
+/* Active tab covers the bottom border — the "open page" effect */
+.tab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0; right: 0;
+  height: 3px;
+  background: var(--white);
+}
+
+.nav-cta {
+  background: var(--purple);
+  color: white;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.55rem 1.25rem;
+  border-radius: 2px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.nav-cta:hover { background: var(--purple-dark); }
+
+.nav-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+}
+
+/* ─── Mobile Nav — Side Bookmark Tabs ───────────────────────────────────── */
+/* TODO Sprint 2: fully implement mobile slide-out side tabs */
+/* On mobile: the top nav hides, and side tabs appear instead            */
+@media (max-width: 768px) {
+  .top-nav-wrap { display: none; }
+  .mobile-nav  { display: flex; }
+  .container   { padding: 0 1.25rem; }
+}
+
+.mobile-nav {
+  display: none; /* hidden on desktop */
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: column;
+  gap: 2px;
+  z-index: 100;
+}
+
+/* Each mobile tab sticks out from the right edge */
+.mobile-tab {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  background: var(--purple);
+  color: white;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 1rem 0.5rem;
+  border-radius: 4px 0 0 4px;
+  cursor: pointer;
+  transition: background 0.2s, padding-left 0.2s;
+}
+.mobile-tab:hover { background: var(--purple-dark); padding-left: 0.75rem; }
+.mobile-tab.active { background: var(--purple-dark); }
+
+/* ─── Section utility ────────────────────────────────────────────────────── */
+.section-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--purple);
+  margin-bottom: 0.5rem;
+}
+
+.section-h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 400;
+  color: var(--ink);
+}
+
+/* ─── Buttons ────────────────────────────────────────────────────────────── */
+.btn-primary {
+  background: var(--purple);
+  color: white;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  padding: 0.8rem 1.6rem;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.btn-primary:hover { background: var(--purple-dark); transform: translateY(-1px); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--purple);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  padding: 0.8rem 1.6rem;
+  border: 1.5px solid var(--purple-light);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.btn-ghost:hover { border-color: var(--purple); background: var(--bg-xlight); }
+
+/* ─── Fade-in ────────────────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.7s ease both; }
+.delay-1 { animation-delay: 0.12s; }
+.delay-2 { animation-delay: 0.24s; }
+.delay-3 { animation-delay: 0.36s; }
+.delay-4 { animation-delay: 0.5s; }
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--purple-light); border-radius: 2px; }

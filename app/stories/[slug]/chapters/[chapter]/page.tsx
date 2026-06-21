@@ -1,0 +1,101 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import ReaderHeader from "@/components/ReaderHeader";
+import ChapterNav from "@/components/ChapterNav";
+import { getAllStories, getChapterData } from "@/lib/stories";
+
+type Params = { slug: string; chapter: string };
+
+export function generateStaticParams(): Params[] {
+  return getAllStories().flatMap((story) =>
+    story.chapters.map((ch) => ({ slug: story.slug, chapter: String(ch.number) }))
+  );
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<Params>;
+}): Promise<Metadata> {
+  const { slug, chapter } = await params;
+  const lookup = getChapterData(slug, Number(chapter));
+  if (!lookup) return { title: "Chapter not found — AdunolaBooks" };
+  return {
+    title: `${lookup.chapter.title} · ${lookup.story.title} — AdunolaBooks`,
+    description: lookup.story.excerpt,
+  };
+}
+
+/*
+  No TopNav here, intentionally. Sprint 2's reading-UX rule: the website
+  chrome should fade away while reading. The story becomes the interface.
+  Sprint 3: getChapterData() will read the chapter row from Supabase and
+  this same layout drives the dynamic-upload reading experience too.
+*/
+export default async function ChapterReaderPage({
+  params,
+}: {
+  params: Promise<Params>;
+}) {
+  const { slug, chapter } = await params;
+  const chapterNumber = Number(chapter);
+
+  if (!Number.isFinite(chapterNumber)) notFound();
+
+  const lookup = getChapterData(slug, chapterNumber);
+  if (!lookup) notFound();
+
+  const { story, chapter: ch, prevChapter, nextChapter } = lookup;
+
+  return (
+    <div className="reader-page">
+      <ReaderHeader
+        storySlug={story.slug}
+        storyTitle={story.title}
+        chapterNumber={ch.number}
+        chapterCount={story.chapters.length}
+      />
+
+      <article className="reader-content-wrap fade-up">
+        <div className="reader-meta-block">
+          <p className="reader-eyebrow">{story.title}</p>
+          <h1 className="reader-title font-display">{ch.title}</h1>
+          {ch.subtitle && <p className="reader-subtitle">{ch.subtitle}</p>}
+
+          {ch.status === "available" && (
+            <div className="reader-meta-row">
+              <span>{ch.publishedAt}</span>
+              <span className="reader-meta-dot" aria-hidden="true" />
+              <span>{ch.readTime} read</span>
+            </div>
+          )}
+        </div>
+
+        {ch.status === "available" && ch.content ? (
+          <>
+            <div className="reader-body">
+              {ch.content.map((paragraph, i) => (
+                <p key={i}>{paragraph}</p>
+              ))}
+            </div>
+
+            <div className="reader-ornament" aria-hidden="true">
+              <span>❧</span>
+            </div>
+          </>
+        ) : (
+          <div className="reader-drafting">
+            <p>These pages are still being inked. Check back soon.</p>
+          </div>
+        )}
+      </article>
+
+      <ChapterNav storySlug={story.slug} prevChapter={prevChapter} nextChapter={nextChapter} />
+
+      {/* Quiet bottom margin — deliberate whitespace, not a missing footer.
+          The reading page intentionally has no site footer; it ends the
+          way a page in a book ends, not the way a website page does. */}
+      <div style={{ height: "4rem" }} aria-hidden="true" />
+    </div>
+  );
+}

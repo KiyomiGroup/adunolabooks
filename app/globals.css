@@ -228,12 +228,13 @@ body {
   padding-bottom: 0.6rem;
 }
 
-/* ─── Mobile: Bottom Navigation Bar ──────────────────────────────────────── */
+/* ─── Mobile: Side Bookmark Tabs (Right-edge index dividers) ───────────── */
 /*
-  Replaces the side floating tabs on mobile.
-  A paper-textured bottom bar with bookmark-shaped active indicator,
-  following the sketch: logo + nav items in a clean horizontal row.
-  Sits above the safe area on iOS/Android.
+  Physical journal index dividers fixed to the right edge of the screen.
+  Each tab has a pointed left-facing notch like a real book index tab.
+  Vertical text rotated to read bottom-to-top.
+  Active tab slides out further and glows.
+  Content gets right padding so nothing hides behind the tabs.
 */
 
 /* ── Global mobile viewport fix ── */
@@ -248,99 +249,67 @@ html, body {
   .mobile-nav   { display: flex; }
   .container    { padding: 0 1rem; }
 
-  /* Reserve space at bottom for the fixed nav bar */
-  body { padding-bottom: env(safe-area-inset-bottom, 0px); }
-  main { padding-bottom: 5rem; }
+  /* Right padding so content never sits behind the tabs */
+  main { padding-right: 44px; }
 }
 
-/* ── Bottom nav bar — visible only on mobile ── */
+/* ── Side bookmark nav — hidden on desktop ── */
 .mobile-nav {
-  display: none; /* hidden on desktop */
+  display: none;
   position: fixed;
-  bottom: 0;
-  left: 0;
   right: 0;
-  z-index: 100;
-
-  /* Paper ribbon — same feel as desktop nav */
-  background: var(--paper);
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
-
-  border-top: 1.5px solid var(--purple-light);
-  box-shadow:
-    0 -1px 0 var(--lavender-border),
-    0 -4px 16px var(--lavender-shadow),
-    0 -8px 32px rgba(93, 63, 172, 0.04);
-
-  /* Safe area bottom padding for modern phones */
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-
-  flex-direction: row;
-  align-items: stretch;
-  justify-content: space-around;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: column;
+  gap: 4px;
+  z-index: 200;
 }
 
-/* Each tab in the bottom bar */
+/* Each tab — vertical strip with pointed left notch */
 .mobile-tab {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-  padding: 0.75rem 0.5rem 0.65rem;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
 
   text-decoration: none;
   font-family: 'DM Mono', monospace;
-  font-size: 0.52rem;
+  font-size: 0.5rem;
   font-weight: 400;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: white;
+
+  padding: 1.1rem 0.6rem;
   cursor: pointer;
   white-space: nowrap;
-  position: relative;
 
-  transition: color 0.3s var(--ease-paper), background 0.3s var(--ease-paper);
+  /* Pointed bookmark shape — tip points left into the page */
+  clip-path: polygon(10px 0%, 100% 0%, 100% 100%, 10px 100%, 0% 50%);
+
+  background: var(--purple);
+  box-shadow: -4px 0 14px rgba(123, 63, 242, 0.22),
+              inset 1px 0 0 rgba(255, 255, 255, 0.14);
+
+  transition:
+    padding-right 0.35s var(--ease-book),
+    background    0.3s  var(--ease-paper),
+    box-shadow    0.35s var(--ease-paper);
 }
 
-/* Bookmark notch indicator at the top of active tab */
-.mobile-tab::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 32px;
-  height: 3px;
-  border-radius: 0 0 3px 3px;
-  background: transparent;
-  transition: background 0.3s var(--ease-paper);
+/* Slightly different tint per tab — coloured index dividers */
+.mobile-tab:nth-child(1) { background: var(--purple); }
+.mobile-tab:nth-child(2) { background: #8B47F8; }
+.mobile-tab:nth-child(3) { background: #6B32D8; }
+.mobile-tab:nth-child(4) { background: var(--purple-dark); }
+
+.mobile-tab:hover {
+  padding-right: 1rem;
 }
 
 .mobile-tab.active {
-  color: var(--purple-dark);
-}
-.mobile-tab.active::before {
-  background: var(--purple);
-}
-
-/* Small icon dot above label for visual rhythm */
-.mobile-tab-icon {
-  width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.85rem;
-  line-height: 1;
-  opacity: 0.5;
-  transition: opacity 0.3s var(--ease-paper), transform 0.3s var(--ease-paper);
-}
-.mobile-tab.active .mobile-tab-icon {
-  opacity: 1;
-  transform: translateY(-1px);
+  padding-right: 1.1rem;
+  box-shadow: -5px 0 20px rgba(123, 63, 242, 0.42),
+              inset 1px 0 0 rgba(255, 255, 255, 0.22);
+  filter: brightness(1.08);
 }
 
 /* ─── Paper Wave Dividers ────────────────────────────────────────────────── */

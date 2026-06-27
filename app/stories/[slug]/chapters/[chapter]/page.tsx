@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ReaderHeader from "@/components/ReaderHeader";
 import ChapterNav from "@/components/ChapterNav";
+import MobileBottomBar from "@/components/MobileBottomBar";
 import { getAllStories, getChapterData } from "@/lib/stories";
 
 type Params = { slug: string; chapter: string };
@@ -26,12 +27,6 @@ export async function generateMetadata({
   };
 }
 
-/*
-  No TopNav here, intentionally. Sprint 2's reading-UX rule: the website
-  chrome should fade away while reading. The story becomes the interface.
-  Sprint 3: getChapterData() will read the chapter row from Supabase and
-  this same layout drives the dynamic-upload reading experience too.
-*/
 export default async function ChapterReaderPage({
   params,
 }: {
@@ -46,6 +41,13 @@ export default async function ChapterReaderPage({
   if (!lookup) notFound();
 
   const { story, chapter: ch, prevChapter, nextChapter } = lookup;
+
+  const nextAvailable = nextChapter?.status === "available";
+  const mobileCtaLabel = nextAvailable ? "Next Chapter →" : "Back to Story →";
+  const mobileCtaHref  = nextAvailable
+    ? `/stories/${story.slug}/chapters/${nextChapter!.number}`
+    : `/stories/${story.slug}`;
+  const mobileCounter  = `${ch.number} / ${story.chapters.length}`;
 
   return (
     <div className="reader-page">
@@ -90,12 +92,23 @@ export default async function ChapterReaderPage({
         )}
       </article>
 
-      <ChapterNav storySlug={story.slug} prevChapter={prevChapter} nextChapter={nextChapter} />
+      {/* Desktop chapter navigation — hidden on mobile via CSS */}
+      <ChapterNav
+        storySlug={story.slug}
+        prevChapter={prevChapter}
+        nextChapter={nextChapter}
+      />
 
-      {/* Quiet bottom margin — deliberate whitespace, not a missing footer.
-          The reading page intentionally has no site footer; it ends the
-          way a page in a book ends, not the way a website page does. */}
-      <div style={{ height: "4rem" }} aria-hidden="true" />
+      {/* Desktop bottom whitespace */}
+      <div className="u-desktop-only" style={{ height: "4rem" }} aria-hidden="true" />
+
+      {/* Mobile bottom action bar — replaces ChapterNav on mobile/tablet */}
+      <MobileBottomBar
+        ctaLabel={mobileCtaLabel}
+        ctaHref={mobileCtaHref}
+        counterLabel={mobileCounter}
+        homeHref="/"
+      />
     </div>
   );
 }

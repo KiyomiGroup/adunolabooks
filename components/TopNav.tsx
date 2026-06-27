@@ -13,11 +13,29 @@ const NAV_ITEMS = [
 export default function TopNav() {
   const pathname = usePathname();
 
-  // Context-aware CTA label for the bottom bar
-  const isStoryPage = pathname.startsWith("/stories/") && !pathname.includes("/chapters/");
-  const isChapterPage = pathname.includes("/chapters/");
-  const ctaLabel = isChapterPage ? "Continue Reading →" : isStoryPage ? "Start Reading →" : "Browse Stories →";
-  const ctaHref = isChapterPage ? pathname : "/stories";
+  const isStoryDetail  = pathname.startsWith("/stories/") && !pathname.includes("/chapters/");
+  const isStoriesPage  = pathname === "/stories";
+
+  // Derive slug from /stories/[slug] for direct chapter-1 link
+  const slug = isStoryDetail ? pathname.split("/")[2] : null;
+
+  const ctaLabel = isStoryDetail  ? "Start Reading →"
+                 : isStoriesPage  ? "Browse →"
+                 : "Browse Stories →";
+
+  const ctaHref = isStoryDetail && slug
+    ? `/stories/${slug}/chapters/1`
+    : "/stories";
+
+  // Counter: position of active section (HOME=1, STORIES=2, POEMS=3, ABOUT=4)
+  const navIndex = (() => {
+    if (pathname === "/")                            return 1;
+    if (pathname.startsWith("/stories"))             return 2;
+    if (pathname.startsWith("/poems"))               return 3;
+    if (pathname.startsWith("/about"))               return 4;
+    return 1;
+  })();
+  const counterLabel = `${navIndex} / 4`;
 
   return (
     <>
@@ -46,15 +64,12 @@ export default function TopNav() {
         </nav>
       </header>
 
-      {/* ── Mobile layer 1: Top brand strip ── */}
-      <div className="mobile-top-bar" aria-hidden="true">
-        <span className="mobile-top-bar-logo">AdunolaBooks</span>
-      </div>
-
-      {/* ── Mobile layer 2: Side bookmark index tabs ── */}
+      {/* ── Mobile: side bookmark index tabs (right edge) ── */}
       <nav className="mobile-nav" aria-label="Mobile navigation">
         {NAV_ITEMS.map((item) => {
-          const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+          const isActive =
+            pathname === item.href ||
+            (item.href !== "/" && pathname.startsWith(item.href));
           return (
             <Link
               key={item.href}
@@ -68,11 +83,33 @@ export default function TopNav() {
         })}
       </nav>
 
-      {/* ── Mobile layer 3: Bottom action bar ── */}
+      {/* ── Mobile: bottom action bar ── */}
       <div className="mobile-bottom-bar">
         {/* Home circle */}
         <Link href="/" className="mobile-home-btn" aria-label="Home">
-          ⌂
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 20 20"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path
+              d="M3 9.5L10 3l7 6.5V17a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5Z"
+              stroke="var(--purple-dark)"
+              strokeWidth="1.6"
+              strokeLinejoin="round"
+              fill="none"
+            />
+            <path
+              d="M7.5 18v-5h5v5"
+              stroke="var(--purple-dark)"
+              strokeWidth="1.6"
+              strokeLinejoin="round"
+              fill="none"
+            />
+          </svg>
         </Link>
 
         {/* Context CTA */}
@@ -80,12 +117,9 @@ export default function TopNav() {
           {ctaLabel}
         </Link>
 
-        {/* Page indicator — shows current section */}
+        {/* Section counter */}
         <div className="mobile-page-counter" aria-hidden="true">
-          {NAV_ITEMS.findIndex(i => i.href !== "/" && pathname.startsWith(i.href)) >= 0
-            ? `${NAV_ITEMS.findIndex(i => i.href !== "/" && pathname.startsWith(i.href)) + 1}/${NAV_ITEMS.length}`
-            : "1/4"
-          }
+          {counterLabel}
         </div>
       </div>
     </>

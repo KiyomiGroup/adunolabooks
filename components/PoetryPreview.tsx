@@ -40,8 +40,8 @@ export default function PoetryPreview() {
           </a>
         </div>
 
-        {/* Two poem cards side-by-side */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem" }}>
+        {/* Poem cards — CSS class `poetry-grid` controls columns; see globals.css */}
+        <div className="poetry-grid">
           {MOCK_POEMS.map((poem) => (
             <article
               key={poem.id}

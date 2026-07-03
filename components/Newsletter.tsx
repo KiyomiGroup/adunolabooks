@@ -15,10 +15,8 @@ export default function Newsletter() {
 
   return (
     <section style={{ background: "var(--purple)", padding: "5rem 0" }}>
-      <div
-        className="container"
-        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem", alignItems: "center" }}
-      >
+      {/* CSS class `newsletter-grid` controls columns; see globals.css */}
+      <div className="container newsletter-grid">
         {/* Left — copy */}
         <div>
           <p style={{

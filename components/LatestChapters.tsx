@@ -23,11 +23,8 @@ export default function LatestChapters() {
           {MOCK_CHAPTERS.map((ch) => (
             <li
               key={ch.id}
+              className="chapter-row-grid"
               style={{
-                display: "grid",
-                gridTemplateColumns: "2.5rem 1fr auto",
-                gap: "1.5rem",
-                alignItems: "center",
                 borderTop: "1px solid var(--border)",
                 padding: "1.5rem 0",
                 cursor: "pointer",
@@ -39,7 +36,8 @@ export default function LatestChapters() {
                 const el = e.currentTarget as HTMLElement;
                 el.style.background = "var(--white)";
                 el.style.padding = "1.5rem 1rem";
-                el.style.margin = "0 -1rem";
+                /* Only extend beyond padding on desktop — avoids horizontal overflow on mobile */
+                if (window.innerWidth > 1024) el.style.margin = "0 -1rem";
               }}
               onMouseLeave={(e) => {
                 const el = e.currentTarget as HTMLElement;
@@ -84,8 +82,8 @@ export default function LatestChapters() {
                 </h3>
               </div>
 
-              {/* Meta */}
-              <div style={{ textAlign: "right" }}>
+              {/* Meta — hidden on mobile via .chapter-row-meta CSS */}
+              <div className="chapter-row-meta" style={{ textAlign: "right" }}>
                 <p style={{ fontSize: "0.65rem", color: "var(--muted)", margin: "0 0 0.2rem" }}>{ch.publishedAt}</p>
                 <p style={{
                   fontFamily: "'DM Mono', monospace",

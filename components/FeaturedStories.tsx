@@ -67,8 +67,8 @@ export default function FeaturedStories() {
           </a>
         </div>
 
-        {/* Cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "1.25rem" }}>
+        {/* Cards — CSS class `featured-grid` controls columns; see globals.css */}
+        <div className="featured-grid">
           {MOCK_STORIES.map((story) => {
             const a = ACCENT[story.accentClass];
             return (

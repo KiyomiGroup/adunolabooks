@@ -4,7 +4,7 @@ const LINKS = ["Stories", "Poems", "About"];
 
 export default function Footer() {
   return (
-    <footer style={{ background: "var(--ink)", padding: "2.5rem 3rem" }}>
+    <footer className="footer-wrap" style={{ background: "var(--ink)" }}>
       <div
         style={{
           maxWidth: "1100px",

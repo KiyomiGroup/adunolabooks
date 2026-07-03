@@ -1479,3 +1479,97 @@ html, body {
     letter-spacing: 0.06em;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════════════
+   MOBILE-FIRST GRID OVERRIDES
+   Converts multi-column desktop grids to single-column on mobile.
+   Desktop (≥ 1024px) is rendered identically to before — these classes
+   replicate the original inline styles and are only overridden below 1024px.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Featured Stories — homepage 3-col grid ─────────────────────────────── */
+.featured-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+@media (max-width: 1024px) {
+  .featured-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+/* ─── Poetry Preview — homepage 2-col grid ───────────────────────────────── */
+.poetry-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+@media (max-width: 1024px) {
+  .poetry-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+}
+
+/* ─── Newsletter — homepage 2-col copy + form grid ───────────────────────── */
+.newsletter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+@media (max-width: 1024px) {
+  .newsletter-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  /* Full-width email input row on mobile */
+  .newsletter-grid input[type="email"] {
+    border-right: 1px solid rgba(255,255,255,0.2) !important;
+    border-radius: 3px !important;
+  }
+  .newsletter-grid button[type="button"],
+  .newsletter-grid button:not([type]) {
+    border-radius: 3px !important;
+    width: 100%;
+  }
+  .newsletter-grid > div:last-child > div > div {
+    flex-direction: column;
+  }
+}
+
+/* ─── Latest Chapters — per-item 3-col row ───────────────────────────────── */
+.chapter-row-grid {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr auto;
+  gap: 1.5rem;
+  align-items: center;
+}
+/* Hide date/readtime column on mobile — chapter number + title fill the row */
+.chapter-row-meta {
+  display: block;
+}
+@media (max-width: 1024px) {
+  .chapter-row-grid {
+    grid-template-columns: 2.5rem 1fr;
+    gap: 1rem;
+  }
+  .chapter-row-meta {
+    display: none;
+  }
+}
+
+/* ─── Footer padding ─────────────────────────────────────────────────────── */
+/* Desktop: 2.5rem 3rem (same as before inline style) */
+.footer-wrap {
+  padding: 2.5rem 3rem;
+}
+/* Mobile: reduce horizontal padding — `main` already adds 48px right for
+   the side-tab nav, so large footer padding double-indents the content. */
+@media (max-width: 1024px) {
+  .footer-wrap {
+    padding: 2rem 1.25rem;
+  }
+}

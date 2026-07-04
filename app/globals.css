@@ -244,18 +244,18 @@ html, body {
 }
 
 @media (max-width: 1024px) {
-  .top-nav-wrap      { display: none; }
-  .mobile-nav        { display: flex; }
-  .mobile-top-bar    { display: none; } /* not used in new mobile design */
-  .mobile-bottom-bar { display: flex; }
+  .top-nav-wrap      { display: none !important; }
+  .mobile-nav        { display: flex !important; }
+  .mobile-top-bar    { display: none !important; }
+  .mobile-bottom-bar { display: flex !important; }
   .container         { padding: 0 1rem; }
 
-  /* Space for fixed bottom bar only — tabs float over content (no reserved gap) */
+  /* Space for fixed bottom bar only — tabs float over content */
   body { padding-bottom: 0; }
   main {
     padding-top: 0;
-    padding-right: 0;     /* tabs overlay content, no wasted right gap */
-    padding-bottom: 72px; /* clear bottom action bar */
+    padding-right: 0;
+    padding-bottom: 72px;
   }
 }
 
@@ -1581,77 +1581,88 @@ html, body {
 
 /* ═══════════════════════════════════════════════════════════════
    MOBILE HOMEPAGE  —  m-home-*
-   Full-screen featured book hero matching the sketch:
-   brand kicker → large cover → story info → bottom bar
+   Featured book card + "More from the Library" list
+   Same card-layout language as m-hero-card (proven to work)
    ═══════════════════════════════════════════════════════════════ */
 
+/* Wrapper: same padding/background as m-hero-card */
 .m-home-page {
-  display: flex;
-  flex-direction: column;
-  min-height: calc(100svh - 72px); /* fill screen minus bottom bar */
   background: var(--bg);
+  padding: 1.5rem 1rem 0.5rem;
+  padding-right: 54px; /* clear 48px side tabs */
 }
 
+/* "ADUNOLABOOKS" centered kicker */
 .m-home-kicker {
   font-family: 'DM Mono', monospace;
-  font-size: 0.54rem;
-  letter-spacing: 0.28em;
+  font-size: 0.56rem;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
   color: var(--purple-dark);
-  padding: 1.1rem 1rem 0.75rem;
+  text-align: center;
+  margin-bottom: 1.25rem;
 }
 
-/* Cover fills the available vertical space — dominant hero element */
-.m-home-cover-wrap {
-  flex: 1;
-  padding: 0 1rem;
-  /* Constrain width so cover doesn't bleed under tabs */
-  padding-right: 58px;
-  min-height: 0;
+/* Cover (left) + info (right) — identical to .m-hero-row */
+.m-home-hero-row {
   display: flex;
-  align-items: stretch;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1.15rem;
 }
 
-.m-home-cover-wrap > * {
-  flex: 1;
+.m-home-cover {
+  flex-shrink: 0;
+  width: 108px;
 }
 
-/* Info strip at the bottom of the hero area */
 .m-home-info {
-  padding: 1.1rem 1rem 1.4rem;
-  padding-right: 58px; /* clear side tabs */
+  flex: 1;
+  min-width: 0;
 }
 
 .m-home-genre {
   font-family: 'DM Mono', monospace;
-  font-size: 0.52rem;
-  letter-spacing: 0.16em;
+  font-size: 0.55rem;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--purple);
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.42rem;
 }
 
 .m-home-title {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 1.75rem;
+  font-size: 1.62rem;
   font-weight: 400;
-  line-height: 1.1;
+  line-height: 1.12;
   color: var(--ink);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.32rem;
 }
 
 .m-home-author {
   font-family: 'DM Mono', monospace;
-  font-size: 0.54rem;
+  font-size: 0.57rem;
   letter-spacing: 0.1em;
   color: var(--muted);
-  margin-bottom: 0.55rem;
+  margin-bottom: 0.6rem;
 }
 
 .m-home-excerpt {
-  font-size: 0.8rem;
+  font-size: 0.81rem;
   color: var(--muted);
-  line-height: 1.6;
+  line-height: 1.65;
+}
+
+/* "More from the Library" list section */
+.m-home-more-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.53rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--purple);
+  margin: 1.4rem 0 0.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--lavender-border);
 }
 
 /* ═══════════════════════════════════════════════════════════════

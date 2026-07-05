@@ -9,8 +9,11 @@ import MobileHomePage from "@/components/MobileHomePage";
 import { WaveDown, WaveUp } from "@/components/WaveDivider";
 import { getAllStories } from "@/lib/stories";
 
-export default function Home() {
-  const stories = getAllStories();
+/* Sprint 3: dynamic — homepage reflects latest published content */
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const stories = await getAllStories();
   const [featured, ...rest] = stories;
 
   return (

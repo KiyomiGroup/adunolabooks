@@ -10,6 +10,30 @@ export default function NewBook() {
         <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2rem", fontWeight: 400, color: "var(--ink)", margin: "0.75rem 0 0" }}>New Book</h1>
       </div>
 
+      {/* Cover upload note — shown before book exists */}
+      <div style={{
+        background: "var(--purple-light)",
+        border: "1px solid var(--lavender-border)",
+        borderRadius: "6px",
+        padding: "0.9rem 1.1rem",
+        marginBottom: "1.75rem",
+      }}>
+        <p style={{
+          fontFamily: "'DM Mono', monospace",
+          fontSize: "0.56rem",
+          letterSpacing: "0.14em",
+          textTransform: "uppercase",
+          color: "var(--purple-dark)",
+          marginBottom: "0.3rem",
+        }}>
+          Cover Image
+        </p>
+        <p style={{ fontSize: "0.78rem", color: "var(--muted)", lineHeight: 1.6 }}>
+          Save the book first, then upload a cover from the Edit page.
+          The cover will appear on the Stories page and book detail page immediately.
+        </p>
+      </div>
+
       <form action={createBook} style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
         <StudioField label="Title" name="title" required placeholder="e.g. Dust and Delay" />
         <StudioField label="Synopsis" name="synopsis" type="textarea" rows={5}

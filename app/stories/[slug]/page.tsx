@@ -52,7 +52,7 @@ export default async function BookDetailPage({ params }: { params: Promise<Param
 
               <div className="book-hero fade-up">
                 <div className="book-hero-cover-wrap">
-                  <BookCover title={story.title} accent={story.accent} size="lg" />
+                  <BookCover title={story.title} accent={story.accent} coverUrl={(story as any).coverUrl ?? null} size="lg" />
                 </div>
 
                 <div>

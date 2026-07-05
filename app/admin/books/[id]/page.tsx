@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { updateBook } from "@/lib/actions/books";
 import StudioField from "@/components/admin/StudioField";
+import CoverUploader from "@/components/admin/CoverUploader";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { BookRow } from "@/lib/supabase/types";
@@ -21,6 +22,17 @@ export default async function EditBook({ params }: Props) {
       <div style={{ marginBottom: "2rem" }}>
         <Link href="/admin/books" style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.58rem", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--muted)", textDecoration: "none" }}>← Books</Link>
         <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2rem", fontWeight: 400, color: "var(--ink)", margin: "0.75rem 0 0" }}>Edit Book</h1>
+      </div>
+
+      {/* ── Cover upload — wired to Supabase Storage ── */}
+      <div style={{
+        background: "var(--white)",
+        border: "1.5px solid var(--lavender-border)",
+        borderRadius: "8px",
+        padding: "1.4rem",
+        marginBottom: "2rem",
+      }}>
+        <CoverUploader bookId={id} currentUrl={book.cover_url} />
       </div>
 
       <form action={updateWithId} style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>

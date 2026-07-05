@@ -1,6 +1,6 @@
 "use client";
 
-import { Accent } from "@/lib/stories";
+import { Accent } from "@/lib/stories-types";
 
 /*
   ── Book cover placeholder ────────────────────────────────────────────

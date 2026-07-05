@@ -5,7 +5,7 @@
   Keeps FeaturedStories a pure Server Component.
 */
 import Link from "next/link";
-import type { Story } from "@/lib/stories";
+import type { Story } from "@/lib/stories-types";
 
 interface Props {
   story: Story;

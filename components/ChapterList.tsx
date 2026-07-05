@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Story } from "@/lib/stories";
+import { Story } from "@/lib/stories-types";
 
 export default function ChapterList({ story }: { story: Story }) {
   return (

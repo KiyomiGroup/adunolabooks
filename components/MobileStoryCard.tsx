@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Story } from "@/lib/stories";
+import { Story } from "@/lib/stories-types";
 import BookCover from "@/components/BookCover";
 
 export default function MobileStoryCard({ story }: { story: Story }) {

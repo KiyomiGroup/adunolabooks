@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Story, ACCENT_COLORS, getFirstAvailableChapter } from "@/lib/stories";
+import { Story, ACCENT_COLORS, getFirstAvailableChapter } from "@/lib/stories-types";
 import BookCover from "@/components/BookCover";
 
 export default function StoryCard({ story }: { story: Story }) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Story } from "@/lib/stories";
+import { Story } from "@/lib/stories-types";
 import StoryCard from "@/components/StoryCard";
 
 export default function StoriesGrid({ stories }: { stories: Story[] }) {

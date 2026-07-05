@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Chapter } from "@/lib/stories";
+import { Chapter } from "@/lib/stories-types";
 
 export default function ChapterNav({
   storySlug,

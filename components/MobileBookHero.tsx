@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Story, getFirstAvailableChapter } from "@/lib/stories";
+import { Story, getFirstAvailableChapter } from "@/lib/stories-types";
 import BookCover from "@/components/BookCover";
 import ChapterList from "@/components/ChapterList";
 

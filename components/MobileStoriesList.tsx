@@ -1,4 +1,4 @@
-import { Story } from "@/lib/stories";
+import { Story } from "@/lib/stories-types";
 import MobileStoryCard from "@/components/MobileStoryCard";
 
 export default function MobileStoriesList({ stories }: { stories: Story[] }) {

@@ -1,7 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 
 function toSlug(title: string): string {
   return title.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-");
@@ -61,29 +61,72 @@ export async function deleteBook(id: string) {
   revalidatePath("/admin/books");
 }
 
-export async function uploadCover(bookId: string, formData: FormData) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/admin/login");
+/*
+  uploadCover — returns a result object instead of throwing.
+  This keeps errors on the client side and prevents Server Component
+  render crashes. Uses the service-role admin client to bypass Storage
+  RLS policies which may block anon-key uploads.
+*/
+export async function uploadCover(
+  bookId: string,
+  formData: FormData
+): Promise<{ success: boolean; publicUrl?: string; error?: string }> {
+  try {
+    // 1. Verify the user is authenticated via the session client
+    const sessionClient = await createClient();
+    const { data: { user } } = await sessionClient.auth.getUser();
+    if (!user) return { success: false, error: "Not authenticated. Please log in again." };
 
-  const file = formData.get("cover") as File;
-  if (!file || file.size === 0) return;
+    // 2. Get the file
+    const file = formData.get("cover") as File;
+    if (!file || file.size === 0) return { success: false, error: "No file received." };
 
-  const ext = file.name.split(".").pop();
-  const filePath = `${bookId}/cover.${ext}`;
+    // 3. Use service-role client for storage + db writes (bypasses RLS)
+    const supabase = await createAdminClient();
 
-  const { error: uploadError } = await supabase.storage
-    .from("book-covers")
-    .upload(filePath, file, { upsert: true });
+    // 4. Build a unique file path — timestamp prevents stale CDN cache
+    const ext      = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+    const filePath = `${bookId}/cover-${Date.now()}.${ext}`;
 
-  if (uploadError) throw new Error(uploadError.message);
+    // 5. Upload to Supabase Storage bucket "book-covers"
+    const { error: uploadError } = await supabase.storage
+      .from("book-covers")
+      .upload(filePath, file, {
+        upsert: true,
+        contentType: file.type || "image/jpeg",
+      });
 
-  const { data: { publicUrl } } = supabase.storage.from("book-covers").getPublicUrl(filePath);
+    if (uploadError) {
+      console.error("[uploadCover] storage error:", uploadError);
+      return { success: false, error: `Storage error: ${uploadError.message}` };
+    }
 
-  const { error: updateError } = await (supabase.from("books") as any)
-    .update({ cover_url: publicUrl })
-    .eq("id", bookId);
+    // 6. Get the public URL (always succeeds — no error to check)
+    const { data: urlData } = supabase.storage
+      .from("book-covers")
+      .getPublicUrl(filePath);
 
-  if (updateError) throw new Error(updateError.message);
-  revalidatePath("/stories");
+    const publicUrl = urlData.publicUrl;
+    if (!publicUrl) return { success: false, error: "Could not generate public URL." };
+
+    // 7. Save the URL into books.cover_url
+    const { error: dbError } = await (supabase.from("books") as any)
+      .update({ cover_url: publicUrl })
+      .eq("id", bookId);
+
+    if (dbError) {
+      console.error("[uploadCover] db error:", dbError);
+      return { success: false, error: `Database error: ${dbError.message}` };
+    }
+
+    // 8. Revalidate public pages so the new cover appears immediately
+    revalidatePath("/stories");
+    revalidatePath(`/stories/${bookId}`);
+    revalidatePath("/admin/books");
+
+    return { success: true, publicUrl };
+  } catch (err: any) {
+    console.error("[uploadCover] unexpected error:", err);
+    return { success: false, error: err?.message ?? "Unexpected error during upload." };
+  }
 }

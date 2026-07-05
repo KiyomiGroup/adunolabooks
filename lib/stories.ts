@@ -60,7 +60,8 @@ async function bookRowToStory(book: BookRow): Promise<Story> {
     stats: { readers: "—", avgReadTime: "—" }, /* Sprint 4: real stats */
     readingProgress: 0,                          /* Sprint 4: per-user  */
     chapters,
-  };
+    coverUrl: book.cover_url ?? null,            /* Supabase Storage public URL */
+  } as Story & { coverUrl: string | null };
 }
 
 export async function getAllStories(): Promise<Story[]> {

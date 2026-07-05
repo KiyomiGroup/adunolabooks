@@ -20,16 +20,18 @@ export async function createChapter(formData: FormData) {
   const title         = formData.get("title") as string;
   const subtitle      = (formData.get("subtitle") as string) || null;
   const chapterNumber = parseInt(formData.get("chapter_number") as string, 10);
+  const rawPrologue   = (formData.get("prologue") as string) || null;
   const rawContent    = formData.get("content") as string;
   const readTime      = (formData.get("read_time") as string) || null;
   const status        = (formData.get("status") as string) || "draft";
   const slug          = toSlug(title);
   const content       = JSON.stringify(textToParagraphs(rawContent));
+  const prologue      = rawPrologue?.trim() || null;
   const publishedAt   = status === "published" ? new Date().toISOString() : null;
 
   const { error } = await supabase.from("chapters").insert([{
     book_id: bookId, title, slug, chapter_number: chapterNumber,
-    subtitle, content, read_time: readTime, status, published_at: publishedAt,
+    subtitle, prologue, content, read_time: readTime, status, published_at: publishedAt,
   }] as any);
 
   if (error) throw new Error(error.message);
@@ -45,10 +47,12 @@ export async function updateChapter(id: string, formData: FormData) {
 
   const title      = formData.get("title") as string;
   const subtitle   = (formData.get("subtitle") as string) || null;
+  const rawPrologue = (formData.get("prologue") as string) || null;
   const rawContent = formData.get("content") as string;
   const readTime   = (formData.get("read_time") as string) || null;
   const status     = formData.get("status") as string;
   const content    = JSON.stringify(textToParagraphs(rawContent));
+  const prologue   = rawPrologue?.trim() || null;
 
   const { data: existing } = await (supabase.from("chapters") as any)
     .select("published_at, status").eq("id", id).single();
@@ -59,7 +63,7 @@ export async function updateChapter(id: string, formData: FormData) {
       : existing?.published_at ?? null;
 
   const { error } = await (supabase.from("chapters") as any)
-    .update({ title, subtitle, content, read_time: readTime, status, published_at: publishedAt })
+    .update({ title, subtitle, prologue, content, read_time: readTime, status, published_at: publishedAt })
     .eq("id", id);
 
   if (error) throw new Error(error.message);

@@ -7,7 +7,6 @@ import { getChapterData } from "@/lib/stories";
 
 type Params = { slug: string; chapter: string };
 
-/* Sprint 3: fully dynamic — no static params, content comes from Supabase */
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
@@ -64,11 +63,21 @@ export default async function ChapterReaderPage({ params }: { params: Promise<Pa
 
         {ch.status === "available" && ch.content ? (
           <>
+            {/* ── Prologue — optional, shown in italics before main body ── */}
+            {ch.prologue && (
+              <div className="reader-prologue">
+                <p className="reader-prologue-text">{ch.prologue}</p>
+                <div className="reader-prologue-rule" aria-hidden="true" />
+              </div>
+            )}
+
+            {/* ── Main chapter body ── */}
             <div className="reader-body">
               {ch.content.map((paragraph, i) => (
                 <p key={i}>{paragraph}</p>
               ))}
             </div>
+
             <div className="reader-ornament" aria-hidden="true">
               <span>❧</span>
             </div>

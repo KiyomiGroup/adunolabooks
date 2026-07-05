@@ -22,6 +22,7 @@ function chapterRowToChapter(row: ChapterRow) {
     number: row.chapter_number,
     title: row.title,
     subtitle: row.subtitle ?? undefined,
+    prologue: row.prologue ?? undefined,
     publishedAt: row.published_at
       ? new Date(row.published_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
       : undefined,

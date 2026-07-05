@@ -1,14 +1,6 @@
-/*
-  ── Database type definitions ─────────────────────────────────────────────────
-  These mirror the Supabase table schemas exactly.
-  Sprint 4: run `npx supabase gen types typescript` to auto-generate from live schema.
-
-  SQL to create these tables is in /supabase/schema.sql
-*/
-
-export type BookStatus = "draft" | "published" | "archived";
+export type BookStatus    = "draft" | "published" | "archived";
 export type ChapterStatus = "draft" | "published";
-export type PoemStatus = "draft" | "published";
+export type PoemStatus    = "draft" | "published";
 
 export interface BookRow {
   id: string;
@@ -31,7 +23,8 @@ export interface ChapterRow {
   slug: string;
   chapter_number: number;
   subtitle: string | null;
-  content: string;          /* JSON string: string[] of paragraphs */
+  prologue: string | null;       /* Optional intro/epigraph before main content */
+  content: string;               /* JSON string: string[] of paragraphs */
   status: ChapterStatus;
   read_time: string | null;
   published_at: string | null;
@@ -42,7 +35,7 @@ export interface ChapterRow {
 export interface PoemRow {
   id: string;
   title: string;
-  content: string;          /* Plain text, line-separated */
+  content: string;
   tags: string[];
   status: PoemStatus;
   published_at: string | null;
@@ -50,7 +43,6 @@ export interface PoemRow {
   updated_at: string;
 }
 
-/* Supabase Database type — passed to createClient<Database>() */
 export interface Database {
   public: {
     Tables: {

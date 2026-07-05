@@ -1588,7 +1588,7 @@ html, body {
 /* Wrapper: same padding/background as m-hero-card */
 .m-home-page {
   background: var(--bg);
-  padding: 1.5rem 1rem 0.5rem;
+  padding: 1rem 1rem 0.5rem;
   padding-right: 54px; /* clear 48px side tabs */
 }
 
@@ -1613,7 +1613,7 @@ html, body {
 
 .m-home-cover {
   flex-shrink: 0;
-  width: 108px;
+  width: 120px;
 }
 
 .m-home-info {
@@ -1632,9 +1632,9 @@ html, body {
 
 .m-home-title {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 1.62rem;
+  font-size: 1.72rem;
   font-weight: 400;
-  line-height: 1.12;
+  line-height: 1.1;
   color: var(--ink);
   margin-bottom: 0.32rem;
 }
@@ -1685,12 +1685,17 @@ html, body {
   to   { opacity: 1; }
 }
 
+@keyframes menuLinkIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .mobile-menu-panel {
   position: absolute;
   top: 0;
   right: 0;
   bottom: 0;
-  width: min(320px, 85vw);
+  width: min(340px, 88vw);
   background: var(--paper);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
   border-left: 1.5px solid var(--purple-light);
@@ -1752,16 +1757,20 @@ html, body {
 
 .mobile-menu-link {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 1.55rem;
+  font-size: 2rem;
   font-weight: 400;
   color: var(--ink);
   text-decoration: none;
-  padding: 0.75rem 0;
+  padding: 1rem 0;
   border-bottom: 1px solid var(--lavender-border);
   display: flex;
   align-items: center;
+  gap: 1rem;
   justify-content: space-between;
-  transition: color 0.25s var(--ease-paper), padding-left 0.25s var(--ease-paper);
+  opacity: 0;
+  transform: translateY(12px);
+  animation: menuLinkIn 0.35s var(--ease-book) forwards;
+  transition: color 0.22s var(--ease-paper), padding-left 0.22s var(--ease-paper);
 }
 .mobile-menu-link:last-child {
   border-bottom: none;
@@ -1795,4 +1804,213 @@ html, body {
 .mobile-menu-footer-copy {
   font-size: 0.7rem;
   color: var(--muted);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE MENU — link number prefix + active state
+   ═══════════════════════════════════════════════════════════════ */
+
+.mobile-menu-link-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.14em;
+  color: var(--muted-light);
+  min-width: 1.75rem;
+  padding-top: 0.25rem;
+}
+
+.mobile-menu-link-label {
+  flex: 1;
+}
+
+.mobile-menu-link.is-active {
+  color: var(--purple-dark);
+}
+
+.mobile-menu-link.is-active .mobile-menu-link-num {
+  color: var(--purple);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE HOMEPAGE — divider line
+   ═══════════════════════════════════════════════════════════════ */
+
+.m-home-divider {
+  height: 1px;
+  background: var(--lavender-border);
+  margin: 0.6rem 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CHAPTER READER — prologue block
+   Displayed before the main body when a chapter has a prologue.
+   Styled in italics, smaller, separated from body by an ornament.
+   ═══════════════════════════════════════════════════════════════ */
+
+.reader-prologue {
+  margin-bottom: 2.5rem;
+  padding: 1.5rem 1.75rem;
+  border-left: 2.5px solid var(--purple-light);
+  background: var(--purple-xlight);
+  border-radius: 0 8px 8px 0;
+}
+
+.reader-prologue-text {
+  font-family: 'Cormorant Garamond', serif !important;
+  font-style: italic !important;
+  font-size: 1.08rem !important;
+  line-height: 1.85 !important;
+  color: var(--ink-soft) !important;
+  margin: 0 !important;
+}
+
+/* Override the drop-cap rule for prologue text */
+.reader-prologue-text::first-letter {
+  font-size: inherit !important;
+  float: none !important;
+  padding: 0 !important;
+  color: inherit !important;
+}
+
+.reader-prologue-rule {
+  width: 40px;
+  height: 1.5px;
+  background: var(--purple-light);
+  margin-top: 1.25rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ABOUT PAGE — mobile styles
+   ═══════════════════════════════════════════════════════════════ */
+
+.m-about-page {
+  background: var(--bg);
+  padding-right: 54px; /* clear side tabs */
+}
+
+.m-about-header {
+  background: var(--ink);
+  padding: 2rem 1.25rem 1.75rem;
+  border-bottom: 1px solid rgba(123, 63, 242, 0.3);
+}
+
+.m-about-monogram {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: rgba(123, 63, 242, 0.2);
+  border: 1.5px solid rgba(123, 63, 242, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  font-style: italic;
+  color: var(--purple-mid);
+  margin-bottom: 1rem;
+}
+
+.m-about-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.85rem;
+  font-weight: 400;
+  color: white;
+  line-height: 1.12;
+  margin-bottom: 0.35rem;
+}
+
+.m-about-role {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(155, 108, 247, 0.65);
+}
+
+.m-about-stats {
+  display: flex;
+  border-bottom: 1px solid var(--lavender-border);
+}
+
+.m-about-stat {
+  flex: 1;
+  padding: 1.1rem 0;
+  text-align: center;
+  border-right: 1px solid var(--lavender-border);
+  background: var(--purple-xlight);
+}
+
+.m-about-stat:last-child {
+  border-right: none;
+}
+
+.m-about-stat-val {
+  display: block;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.7rem;
+  color: var(--purple-dark);
+  line-height: 1;
+  margin-bottom: 3px;
+}
+
+.m-about-stat-lbl {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.48rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.m-about-section {
+  padding: 1.25rem 1.25rem 0;
+  border-bottom: 1px solid rgba(123, 63, 242, 0.07);
+  padding-bottom: 1.25rem;
+}
+
+.m-about-section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--purple);
+  margin-bottom: 0.65rem;
+}
+
+.m-about-section-body {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.875rem;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.m-about-socials {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.25rem;
+}
+
+.m-about-social-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--purple-xlight);
+  border: 1.5px solid var(--purple-light);
+  border-radius: 6px;
+  padding: 0.8rem 1rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--purple-dark);
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background 0.25s var(--ease-paper), border-color 0.25s;
+}
+
+.m-about-social-btn:hover,
+.m-about-social-btn:active {
+  background: var(--purple-light);
+  border-color: var(--purple-mid);
 }

@@ -13,6 +13,7 @@ export interface Chapter {
   number: number;
   title: string;
   subtitle?: string;
+  prologue?: string;     /* Optional intro/epigraph before main content */
   publishedAt?: string;
   readTime?: string;
   status: "available" | "drafting";

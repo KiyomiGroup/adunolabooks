@@ -45,10 +45,33 @@ export default async function EditChapter({ params }: Props) {
         <StudioField label="Chapter Title" name="title" required defaultValue={chapter.title} />
         <StudioField label="Subtitle (optional)" name="subtitle" defaultValue={chapter.subtitle ?? ""} />
         <StudioField label="Estimated Read Time" name="read_time" defaultValue={chapter.read_time ?? ""} placeholder="e.g. 12 min" />
-        <StudioField label="Content" name="content" type="textarea" rows={24} required defaultValue={contentText}
-          hint="Separate paragraphs with a blank line." />
+
+        {/* ── Prologue — optional ── */}
+        <StudioField
+          label="Prologue (optional)"
+          name="prologue"
+          type="textarea"
+          rows={5}
+          defaultValue={chapter.prologue ?? ""}
+          placeholder={"An epigraph, a note, or a short scene before the main body.\n\nLeave blank if this chapter has no prologue."}
+          hint="Displayed in italics before the main chapter content. Leave empty to skip."
+        />
+
+        <StudioField
+          label="Content"
+          name="content"
+          type="textarea"
+          rows={24}
+          required
+          defaultValue={contentText}
+          hint="Separate paragraphs with a blank line."
+        />
+
         <StudioField label="Status" name="status" type="select" defaultValue={chapter.status}
-          options={[{ value: "draft", label: "Draft — not visible to readers" }, { value: "published", label: "Published — live on the site" }]} />
+          options={[
+            { value: "draft",     label: "Draft — not visible to readers" },
+            { value: "published", label: "Published — live on the site" },
+          ]} />
 
         <div style={{ display: "flex", gap: "1rem", paddingTop: "0.5rem" }}>
           <button type="submit" style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", fontWeight: 600, color: "white", background: "var(--purple)", border: "none", padding: "0.85rem 2rem", borderRadius: "6px", cursor: "pointer", boxShadow: "0 2px 16px rgba(123,63,242,0.25)" }}>Save Changes</button>

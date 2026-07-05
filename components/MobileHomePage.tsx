@@ -4,12 +4,11 @@ import BookCover from "@/components/BookCover";
 import MobileStoryCard from "@/components/MobileStoryCard";
 
 /*
-  Mobile homepage — matches Image 2 layout exactly:
-  · "ADUNOLABOOKS" centered kicker
-  · Cover (left 108px) + genre / title / author / excerpt (right)
-  · Full-width "Start Reading →" pill button
-  · Divider
-  · "More from the Library" — rest of stories as MobileStoryCard rows
+  Mobile homepage — matching the sketch:
+  · Centered "ADUNOLABOOKS" kicker (mono, spaced)
+  · Big cover (left, 120px) + genre / title / author / excerpt (right)
+  · Full-width "Start Reading →" CTA button
+  · Divider + "More from the Library" stacked story cards
 */
 export default function MobileHomePage({
   featured,
@@ -19,16 +18,19 @@ export default function MobileHomePage({
   rest: Story[];
 }) {
   const firstChapter = getFirstAvailableChapter(featured);
-  const continuing =
-    featured.readingProgress > 0 && featured.readingProgress < 100;
+  const continuing = featured.readingProgress > 0 && featured.readingProgress < 100;
 
   return (
     <div className="u-mobile-only m-home-page">
       {/* Brand kicker */}
       <p className="m-home-kicker">AdunolaBooks</p>
 
-      {/* Featured book — cover + info row */}
+      {/* Divider above card */}
+      <div className="m-home-divider" />
+
+      {/* Featured book — cover left, meta right */}
       <div className="m-home-hero-row">
+        {/* Book cover — larger, with shadow */}
         <div className="m-home-cover">
           <BookCover title={featured.title} accent={featured.accent} size="sm" />
         </div>
@@ -41,7 +43,10 @@ export default function MobileHomePage({
         </div>
       </div>
 
-      {/* Primary CTA */}
+      {/* Divider */}
+      <div className="m-home-divider" />
+
+      {/* Primary CTA — full width */}
       {firstChapter && (
         <Link
           href={`/stories/${featured.slug}/chapters/${firstChapter.number}`}
@@ -51,7 +56,7 @@ export default function MobileHomePage({
         </Link>
       )}
 
-      {/* More stories */}
+      {/* More stories section */}
       {rest.length > 0 && (
         <>
           <p className="m-home-more-label">More from the Library</p>
@@ -62,6 +67,9 @@ export default function MobileHomePage({
           </div>
         </>
       )}
+
+      {/* Bottom breathing room (above fixed bottom bar) */}
+      <div style={{ height: "1.5rem" }} />
     </div>
   );
 }

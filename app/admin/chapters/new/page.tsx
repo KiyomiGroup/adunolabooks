@@ -32,17 +32,25 @@ export default async function NewChapter() {
           placeholder="e.g. 12 min"
           hint="Displayed to readers before they start." />
 
+        {/* ── Prologue — optional ── */}
+        <div>
+          <StudioField
+            label="Prologue (optional)"
+            name="prologue"
+            type="textarea"
+            rows={5}
+            placeholder={"An epigraph, a note, or a short scene that opens the chapter before the main body.\n\nLeave blank if this chapter has no prologue."}
+            hint="Displayed in italics before the main chapter content. Not required — leave empty to skip."
+          />
+        </div>
+
         <StudioField
           label="Content"
           name="content"
           type="textarea"
           rows={20}
           required
-          placeholder="Write your chapter here. Separate paragraphs with a blank line.
-
-Like this.
-
-Each double-line-break becomes a new paragraph in the reader."
+          placeholder={"Write your chapter here. Separate paragraphs with a blank line.\n\nLike this.\n\nEach double-line-break becomes a new paragraph in the reader."}
           hint="Separate paragraphs with a blank line (press Enter twice). No markdown needed."
         />
 

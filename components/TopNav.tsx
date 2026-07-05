@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const NAV_LINKS = [
   { label: "Home",    href: "/" },
@@ -16,19 +16,20 @@ const SIDE_TABS = [
   { label: "Home",    href: "/" },
   { label: "Stories", href: "/stories" },
   { label: "Poems",   href: "/poems" },
-  { label: "Menu",    href: null },  // null = opens overlay
+  { label: "Menu",    href: null },   // null = opens overlay
 ] as const;
 
 const MENU_ITEMS = [
-  { label: "Home",      href: "/" },
-  { label: "Stories",   href: "/stories" },
-  { label: "Poems",     href: "/poems" },
-  { label: "About",     href: "/about" },
+  { label: "Home",    href: "/",        num: "01" },
+  { label: "Stories", href: "/stories", num: "02" },
+  { label: "Poems",   href: "/poems",   num: "03" },
+  { label: "About",   href: "/about",   num: "04" },
 ] as const;
 
 export default function TopNav() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   // Lock body scroll when menu is open
   useEffect(() => {
@@ -42,6 +43,13 @@ export default function TopNav() {
 
   // Close menu on route change
   useEffect(() => { setMenuOpen(false); }, [pathname]);
+
+  // Close on Escape key
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMenuOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const isStoryDetail = pathname.startsWith("/stories/") && !pathname.includes("/chapters/");
   const isStoriesPage = pathname === "/stories";
@@ -70,7 +78,6 @@ export default function TopNav() {
       <header className="top-nav-wrap">
         <nav className="top-nav" aria-label="Main navigation">
           <span className="nav-logo">AdunolaBooks</span>
-
           {NAV_LINKS.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -84,7 +91,6 @@ export default function TopNav() {
               </Link>
             );
           })}
-
           <div className="nav-right">
             <Link href="/stories" className="nav-cta">Start Reading</Link>
           </div>
@@ -95,7 +101,6 @@ export default function TopNav() {
       <nav className="mobile-nav" aria-label="Mobile navigation">
         {SIDE_TABS.map((item) => {
           if (item.href === null) {
-            // Menu button — opens overlay
             return (
               <button
                 key="menu"
@@ -109,8 +114,9 @@ export default function TopNav() {
             );
           }
           const isActive =
-            pathname === item.href ||
-            (item.href !== "/" && pathname.startsWith(item.href));
+            item.href === "/"
+              ? pathname === "/"
+              : pathname.startsWith(item.href);
           return (
             <Link
               key={item.href}
@@ -138,30 +144,26 @@ export default function TopNav() {
             />
           </svg>
         </Link>
-
-        <Link href={ctaHref} className="mobile-cta-btn">
-          {ctaLabel}
-        </Link>
-
-        <div className="mobile-page-counter" aria-hidden="true">
-          {navIndex} / 4
-        </div>
+        <Link href={ctaHref} className="mobile-cta-btn">{ctaLabel}</Link>
+        <div className="mobile-page-counter" aria-hidden="true">{navIndex} / 4</div>
       </div>
 
-      {/* ── Mobile: menu overlay ── */}
+      {/* ── Mobile: full-screen menu overlay ── */}
       {menuOpen && (
         <div
-          className="mobile-menu-overlay"
+          className={`mobile-menu-overlay ${menuOpen ? "is-open" : ""}`}
           onClick={() => setMenuOpen(false)}
           role="dialog"
           aria-modal="true"
           aria-label="Navigation menu"
         >
+          {/* Panel — stops click propagation */}
           <div
+            ref={panelRef}
             className="mobile-menu-panel"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
+            {/* Header row */}
             <div className="mobile-menu-header">
               <span className="mobile-menu-logo">AdunolaBooks</span>
               <button
@@ -169,24 +171,34 @@ export default function TopNav() {
                 onClick={() => setMenuOpen(false)}
                 aria-label="Close menu"
               >
-                ✕
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                </svg>
               </button>
             </div>
 
-            {/* Nav links */}
+            {/* Nav links — large serif, staggered in */}
             <nav className="mobile-menu-nav" aria-label="Menu navigation">
-              {MENU_ITEMS.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="mobile-menu-link"
-                  onClick={() => setMenuOpen(false)}
-                  aria-current={pathname === item.href ? "page" : undefined}
-                >
-                  {item.label}
-                  <span className="mobile-menu-link-arrow" aria-hidden="true">→</span>
-                </Link>
-              ))}
+              {MENU_ITEMS.map((item, i) => {
+                const isActive =
+                  item.href === "/"
+                    ? pathname === "/"
+                    : pathname.startsWith(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`mobile-menu-link ${isActive ? "is-active" : ""}`}
+                    onClick={() => setMenuOpen(false)}
+                    aria-current={isActive ? "page" : undefined}
+                    style={{ animationDelay: `${0.06 + i * 0.07}s` }}
+                  >
+                    <span className="mobile-menu-link-num">{item.num}</span>
+                    <span className="mobile-menu-link-label">{item.label}</span>
+                    <span className="mobile-menu-link-arrow" aria-hidden="true">→</span>
+                  </Link>
+                );
+              })}
             </nav>
 
             {/* Footer */}

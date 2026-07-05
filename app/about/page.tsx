@@ -76,22 +76,22 @@ export default function AboutPage() {
                     </div>
                   ))}
 
-                  {/* Social links */}
+                  {/* Social links — CSS hover via className, no JS handlers */}
                   <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "1rem" }}>
                     {[
-                      { label: "Twitter / X",  icon: "✕" },
-                      { label: "Instagram",    icon: "ig" },
-                      { label: "LinkedIn",     icon: "in" },
-                    ].map(({ label, icon }) => (
-                      <button
+                      { label: "Twitter / X",  icon: "✕", href: "#" },
+                      { label: "Instagram",    icon: "ig", href: "#" },
+                      { label: "LinkedIn",     icon: "in", href: "#" },
+                    ].map(({ label, icon, href }) => (
+                      <a
                         key={label}
-                        style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "var(--purple-xlight)", border: "1.5px solid var(--purple-light)", borderRadius: "6px", padding: "0.65rem 1.1rem", fontFamily: "'DM Mono', monospace", fontSize: "0.66rem", letterSpacing: "0.1em", color: "var(--purple-dark)", cursor: "pointer", transition: "all 0.25s var(--ease-paper)" }}
-                        onMouseEnter={(e) => { const el = e.currentTarget as HTMLButtonElement; el.style.background = "var(--purple)"; el.style.color = "white"; el.style.borderColor = "var(--purple)"; }}
-                        onMouseLeave={(e) => { const el = e.currentTarget as HTMLButtonElement; el.style.background = "var(--purple-xlight)"; el.style.color = "var(--purple-dark)"; el.style.borderColor = "var(--purple-light)"; }}
+                        href={href}
+                        className="about-social-link"
+                        aria-label={label}
                       >
-                        <span style={{ fontSize: "0.75rem" }}>{icon}</span>
+                        <span aria-hidden="true">{icon}</span>
                         {label}
-                      </button>
+                      </a>
                     ))}
                   </div>
                 </div>
@@ -150,14 +150,14 @@ export default function AboutPage() {
           {/* Social */}
           <div className="m-about-socials">
             {[
-              { label: "Twitter / X", icon: "✕" },
-              { label: "Instagram",   icon: "ig" },
-              { label: "LinkedIn",    icon: "in" },
-            ].map(({ label, icon }) => (
-              <button key={label} className="m-about-social-btn" aria-label={label}>
-                <span>{icon}</span>
+              { label: "Twitter / X", icon: "✕", href: "#" },
+              { label: "Instagram",   icon: "ig", href: "#" },
+              { label: "LinkedIn",    icon: "in", href: "#" },
+            ].map(({ label, icon, href }) => (
+              <a key={label} href={href} className="m-about-social-btn" aria-label={label}>
+                <span aria-hidden="true">{icon}</span>
                 <span>{label}</span>
-              </button>
+              </a>
             ))}
           </div>
 

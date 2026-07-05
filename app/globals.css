@@ -2014,3 +2014,48 @@ html, body {
   background: var(--purple-light);
   border-color: var(--purple-mid);
 }
+
+/* ── About page — desktop social links (CSS-only hover, no JS handlers) ── */
+.about-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--purple-xlight);
+  border: 1.5px solid var(--purple-light);
+  border-radius: 6px;
+  padding: 0.65rem 1.1rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  color: var(--purple-dark);
+  text-decoration: none;
+  transition: background 0.25s var(--ease-paper), color 0.25s var(--ease-paper), border-color 0.25s var(--ease-paper);
+}
+.about-social-link:hover {
+  background: var(--purple);
+  color: white;
+  border-color: var(--purple);
+}
+
+/* Mobile about social buttons — also <a> tags now, no JS */
+.m-about-social-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--purple-xlight);
+  border: 1.5px solid var(--purple-light);
+  border-radius: 6px;
+  padding: 0.8rem 1rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--purple-dark);
+  text-decoration: none;
+  width: 100%;
+  transition: background 0.25s var(--ease-paper), border-color 0.25s;
+}
+.m-about-social-btn:hover,
+.m-about-social-btn:active {
+  background: var(--purple-light);
+  border-color: var(--purple-mid);
+}

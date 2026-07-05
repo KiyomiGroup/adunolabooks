@@ -3,23 +3,16 @@ import { notFound } from "next/navigation";
 import ReaderHeader from "@/components/ReaderHeader";
 import ChapterNav from "@/components/ChapterNav";
 import MobileBottomBar from "@/components/MobileBottomBar";
-import { getAllStories, getChapterData } from "@/lib/stories";
+import { getChapterData } from "@/lib/stories";
 
 type Params = { slug: string; chapter: string };
 
-export function generateStaticParams(): Params[] {
-  return getAllStories().flatMap((story) =>
-    story.chapters.map((ch) => ({ slug: story.slug, chapter: String(ch.number) }))
-  );
-}
+/* Sprint 3: fully dynamic — no static params, content comes from Supabase */
+export const dynamic = "force-dynamic";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<Params>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { slug, chapter } = await params;
-  const lookup = getChapterData(slug, Number(chapter));
+  const lookup = await getChapterData(slug, Number(chapter));
   if (!lookup) return { title: "Chapter not found — AdunolaBooks" };
   return {
     title: `${lookup.chapter.title} · ${lookup.story.title} — AdunolaBooks`,
@@ -27,22 +20,18 @@ export async function generateMetadata({
   };
 }
 
-export default async function ChapterReaderPage({
-  params,
-}: {
-  params: Promise<Params>;
-}) {
+export default async function ChapterReaderPage({ params }: { params: Promise<Params> }) {
   const { slug, chapter } = await params;
   const chapterNumber = Number(chapter);
 
   if (!Number.isFinite(chapterNumber)) notFound();
 
-  const lookup = getChapterData(slug, chapterNumber);
+  const lookup = await getChapterData(slug, chapterNumber);
   if (!lookup) notFound();
 
   const { story, chapter: ch, prevChapter, nextChapter } = lookup;
 
-  const nextAvailable = nextChapter?.status === "available";
+  const nextAvailable  = nextChapter?.status === "available";
   const mobileCtaLabel = nextAvailable ? "Next Chapter →" : "Back to Story →";
   const mobileCtaHref  = nextAvailable
     ? `/stories/${story.slug}/chapters/${nextChapter!.number}`
@@ -80,7 +69,6 @@ export default async function ChapterReaderPage({
                 <p key={i}>{paragraph}</p>
               ))}
             </div>
-
             <div className="reader-ornament" aria-hidden="true">
               <span>❧</span>
             </div>
@@ -92,23 +80,9 @@ export default async function ChapterReaderPage({
         )}
       </article>
 
-      {/* Desktop chapter navigation — hidden on mobile via CSS */}
-      <ChapterNav
-        storySlug={story.slug}
-        prevChapter={prevChapter}
-        nextChapter={nextChapter}
-      />
-
-      {/* Desktop bottom whitespace */}
+      <ChapterNav storySlug={story.slug} prevChapter={prevChapter} nextChapter={nextChapter} />
       <div className="u-desktop-only" style={{ height: "4rem" }} aria-hidden="true" />
-
-      {/* Mobile bottom action bar — replaces ChapterNav on mobile/tablet */}
-      <MobileBottomBar
-        ctaLabel={mobileCtaLabel}
-        ctaHref={mobileCtaHref}
-        counterLabel={mobileCounter}
-        homeHref="/"
-      />
+      <MobileBottomBar ctaLabel={mobileCtaLabel} ctaHref={mobileCtaHref} counterLabel={mobileCounter} homeHref="/" />
     </div>
   );
 }

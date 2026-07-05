@@ -10,17 +10,12 @@ import { getAllStories, getStoryBySlug, getFirstAvailableChapter } from "@/lib/s
 
 type Params = { slug: string };
 
-export function generateStaticParams(): Params[] {
-  return getAllStories().map((s) => ({ slug: s.slug }));
-}
+/* Sprint 3: dynamic — data lives in Supabase now */
+export const dynamic = "force-dynamic";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<Params>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { slug } = await params;
-  const story = getStoryBySlug(slug);
+  const story = await getStoryBySlug(slug);
   if (!story) return { title: "Story not found — AdunolaBooks" };
   return {
     title: `${story.title} — AdunolaBooks`,
@@ -28,13 +23,9 @@ export async function generateMetadata({
   };
 }
 
-export default async function BookDetailPage({
-  params,
-}: {
-  params: Promise<Params>;
-}) {
+export default async function BookDetailPage({ params }: { params: Promise<Params> }) {
   const { slug } = await params;
-  const story = getStoryBySlug(slug);
+  const story = await getStoryBySlug(slug);
 
   if (!story) notFound();
 
@@ -54,15 +45,7 @@ export default async function BookDetailPage({
           <section style={{ background: "var(--bg-soft)" }}>
             <div className="container">
               <div style={{ paddingTop: "2rem" }}>
-                <Link
-                  href="/stories"
-                  style={{
-                    fontSize: "0.72rem",
-                    color: "var(--muted)",
-                    textDecoration: "none",
-                    letterSpacing: "0.04em",
-                  }}
-                >
+                <Link href="/stories" style={{ fontSize: "0.72rem", color: "var(--muted)", textDecoration: "none", letterSpacing: "0.04em" }}>
                   ← All Stories
                 </Link>
               </div>
@@ -85,42 +68,28 @@ export default async function BookDetailPage({
 
                   <div className="book-hero-stats-row">
                     <div>
-                      <div className="book-hero-stat-value font-display">
-                        {story.chapters.length}
-                      </div>
+                      <div className="book-hero-stat-value font-display">{story.chapters.length}</div>
                       <div className="book-hero-stat-label">Chapters</div>
                     </div>
                     <div>
-                      <div className="book-hero-stat-value font-display">
-                        {story.stats.readers}
-                      </div>
+                      <div className="book-hero-stat-value font-display">{story.stats.readers}</div>
                       <div className="book-hero-stat-label">Readers</div>
                     </div>
                     <div>
-                      <div className="book-hero-stat-value font-display">
-                        {story.stats.avgReadTime}
-                      </div>
+                      <div className="book-hero-stat-value font-display">{story.stats.avgReadTime}</div>
                       <div className="book-hero-stat-label">Avg. Chapter</div>
                     </div>
                     <div>
-                      <div className="book-hero-stat-value font-display">
-                        {story.lastUpdated}
-                      </div>
+                      <div className="book-hero-stat-value font-display">{story.lastUpdated}</div>
                       <div className="book-hero-stat-label">Updated</div>
                     </div>
                   </div>
 
                   {firstChapter && (
                     <div className="book-hero-cta-row">
-                      <Link
-                        href={`/stories/${story.slug}/chapters/${firstChapter.number}`}
-                        className="btn-primary"
-                      >
+                      <Link href={`/stories/${story.slug}/chapters/${firstChapter.number}`} className="btn-primary">
                         {continuing ? "Continue Reading →" : "Start Reading →"}
                       </Link>
-                      <span className="btn-ghost" style={{ cursor: "default" }}>
-                        {story.readingProgress}% read
-                      </span>
                     </div>
                   )}
                 </div>
@@ -131,12 +100,7 @@ export default async function BookDetailPage({
           <section style={{ background: "#FFFFFF", padding: "4rem 0 6rem" }}>
             <div className="container">
               <p className="section-tag">Manuscript Index</p>
-              <h2
-                className="section-h2 font-display"
-                style={{ marginBottom: "1.5rem" }}
-              >
-                Chapters
-              </h2>
+              <h2 className="section-h2 font-display" style={{ marginBottom: "1.5rem" }}>Chapters</h2>
               <ChapterList story={story} />
             </div>
           </section>

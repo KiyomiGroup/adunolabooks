@@ -11,8 +11,11 @@ export const metadata: Metadata = {
   description: "Browse the full library of serialized fiction, one quiet shelf at a time.",
 };
 
-export default function StoriesPage() {
-  const stories = getAllStories();
+/* Sprint 3: now dynamic — fetches from Supabase on each request */
+export const dynamic = "force-dynamic";
+
+export default async function StoriesPage() {
+  const stories = await getAllStories();
 
   return (
     <>
@@ -27,10 +30,7 @@ export default function StoriesPage() {
           <section style={{ background: "var(--bg-soft)", padding: "5.5rem 0 4rem" }}>
             <div className="container fade-up">
               <p className="section-tag">The Library</p>
-              <h1
-                className="section-h2 font-display"
-                style={{ fontSize: "clamp(2.2rem, 4.5vw, 3rem)" }}
-              >
+              <h1 className="section-h2 font-display" style={{ fontSize: "clamp(2.2rem, 4.5vw, 3rem)" }}>
                 Stories
               </h1>
               <p className="lede-text">
@@ -42,11 +42,22 @@ export default function StoriesPage() {
 
           <WaveDown fill="#FFFFFF" />
 
-          <section
-            style={{ background: "#FFFFFF", padding: "1rem 0 6rem", marginTop: "-2px" }}
-          >
+          <section style={{ background: "#FFFFFF", padding: "1rem 0 6rem", marginTop: "-2px" }}>
             <div className="container">
-              <StoriesGrid stories={stories} />
+              {stories.length === 0 ? (
+                <div style={{ padding: "5rem 0", textAlign: "center" }}>
+                  <p style={{
+                    fontFamily: "'Cormorant Garamond', serif",
+                    fontSize: "1.5rem",
+                    fontStyle: "italic",
+                    color: "var(--muted)",
+                  }}>
+                    The first chapter is still being written…
+                  </p>
+                </div>
+              ) : (
+                <StoriesGrid stories={stories} />
+              )}
             </div>
           </section>
 

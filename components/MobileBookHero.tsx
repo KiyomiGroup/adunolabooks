@@ -9,13 +9,16 @@ export default function MobileBookHero({ story }: { story: Story }) {
 
   return (
     <div className="u-mobile-only m-hero-card">
-      {/* Brand kicker */}
       <p className="m-kicker">AdunolaBooks</p>
 
-      {/* Cover + metadata row */}
       <div className="m-hero-row">
         <div className="m-hero-cover">
-          <BookCover title={story.title} accent={story.accent} size="sm" />
+          <BookCover
+            title={story.title}
+            accent={story.accent}
+            coverUrl={(story as any).coverUrl ?? null}
+            size="sm"
+          />
         </div>
 
         <div className="m-hero-info">
@@ -26,7 +29,6 @@ export default function MobileBookHero({ story }: { story: Story }) {
         </div>
       </div>
 
-      {/* Primary CTA */}
       {firstChapter && (
         <Link
           href={`/stories/${story.slug}/chapters/${firstChapter.number}`}
@@ -36,7 +38,6 @@ export default function MobileBookHero({ story }: { story: Story }) {
         </Link>
       )}
 
-      {/* Chapter list */}
       <p className="m-manuscript-label">Manuscript Index</p>
       <ChapterList story={story} />
     </div>

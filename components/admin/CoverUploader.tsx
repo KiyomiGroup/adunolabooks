@@ -11,7 +11,7 @@ interface Props {
 type UploadState = "idle" | "uploading" | "success" | "error";
 
 export default function CoverUploader({ bookId, currentUrl }: Props) {
-  const [state, setState] = useState<UploadState>("idle");
+  const [state, setState]     = useState<UploadState>("idle");
   const [preview, setPreview] = useState<string | null>(currentUrl ?? null);
   const [errorMsg, setErrorMsg] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -21,7 +21,7 @@ export default function CoverUploader({ bookId, currentUrl }: Props) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate type + size (max 5 MB)
+    // Client-side validation before hitting the server
     if (!file.type.startsWith("image/")) {
       setErrorMsg("Please select an image file (JPG, PNG, WebP).");
       setState("error");
@@ -33,7 +33,7 @@ export default function CoverUploader({ bookId, currentUrl }: Props) {
       return;
     }
 
-    // Show local preview immediately
+    // Show local blob preview immediately — no waiting for server
     const objectUrl = URL.createObjectURL(file);
     setPreview(objectUrl);
     setState("uploading");
@@ -43,12 +43,17 @@ export default function CoverUploader({ bookId, currentUrl }: Props) {
     fd.append("cover", file);
 
     startTransition(async () => {
-      try {
-        await uploadCover(bookId, fd);
+      // uploadCover now returns { success, publicUrl?, error? } — never throws
+      const result = await uploadCover(bookId, fd);
+
+      if (result.success && result.publicUrl) {
+        // Replace blob URL with the real Supabase public URL
+        setPreview(result.publicUrl);
         setState("success");
-      } catch (err: any) {
+      } else {
         setState("error");
-        setErrorMsg(err?.message ?? "Upload failed. Please try again.");
+        setErrorMsg(result.error ?? "Upload failed. Please try again.");
+        // Revert preview to whatever was there before
         setPreview(currentUrl ?? null);
       }
     });
@@ -76,25 +81,23 @@ export default function CoverUploader({ bookId, currentUrl }: Props) {
         </p>
       </div>
 
-      {/* Preview + upload zone */}
+      {/* Preview + controls */}
       <div style={{ display: "flex", gap: "1.25rem", alignItems: "flex-start" }}>
 
-        {/* Cover preview */}
-        <div
-          style={{
-            width: "100px",
-            height: "138px",
-            borderRadius: "5px",
-            overflow: "hidden",
-            flexShrink: 0,
-            border: "1.5px solid var(--lavender-border)",
-            background: "var(--bg-soft)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            position: "relative",
-          }}
-        >
+        {/* Cover preview box */}
+        <div style={{
+          width: "100px",
+          height: "138px",
+          borderRadius: "5px",
+          overflow: "hidden",
+          flexShrink: 0,
+          border: "1.5px solid var(--lavender-border)",
+          background: "var(--bg-soft)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "relative",
+        }}>
           {preview ? (
             <img
               src={preview}
@@ -107,25 +110,22 @@ export default function CoverUploader({ bookId, currentUrl }: Props) {
               fontSize: "2rem",
               color: "var(--purple-light)",
               fontStyle: "italic",
-            }}>
-              ◻
-            </span>
+            }}>◻</span>
           )}
 
           {/* Uploading overlay */}
           {isUploading && (
             <div style={{
               position: "absolute", inset: 0,
-              background: "rgba(255,255,255,0.78)",
+              background: "rgba(255,255,255,0.82)",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>
               <span style={{
                 fontFamily: "'DM Mono', monospace",
-                fontSize: "0.5rem",
+                fontSize: "0.48rem",
                 letterSpacing: "0.2em",
                 textTransform: "uppercase",
                 color: "var(--purple)",
-                animation: "pulse 1.4s ease-in-out infinite",
               }}>
                 Uploading…
               </span>
@@ -133,7 +133,7 @@ export default function CoverUploader({ bookId, currentUrl }: Props) {
           )}
         </div>
 
-        {/* Upload controls */}
+        {/* Controls + feedback */}
         <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem", flex: 1 }}>
           <button
             type="button"
@@ -149,14 +149,13 @@ export default function CoverUploader({ bookId, currentUrl }: Props) {
               borderRadius: "5px",
               padding: "0.55rem 1rem",
               cursor: isUploading ? "not-allowed" : "pointer",
-              transition: "all 0.25s",
               textAlign: "left",
+              transition: "border-color 0.2s, color 0.2s",
             }}
           >
-            {preview ? "Replace cover →" : "Choose image →"}
+            {preview && state !== "error" ? "Replace cover →" : "Choose image →"}
           </button>
 
-          {/* State feedback */}
           {state === "success" && (
             <p style={{
               fontFamily: "'DM Mono', monospace",
@@ -164,30 +163,25 @@ export default function CoverUploader({ bookId, currentUrl }: Props) {
               letterSpacing: "0.14em",
               textTransform: "uppercase",
               color: "#2d8a5e",
-            }}>
-              ✓ Cover saved
-            </p>
+            }}>✓ Cover saved</p>
           )}
+
           {state === "error" && (
             <p style={{
               fontFamily: "'DM Mono', monospace",
               fontSize: "0.56rem",
-              letterSpacing: "0.14em",
               color: "var(--coral)",
-              lineHeight: 1.5,
-            }}>
-              ✕ {errorMsg}
-            </p>
+              lineHeight: 1.55,
+            }}>✕ {errorMsg}</p>
           )}
+
           {state === "idle" && preview && (
             <p style={{
               fontFamily: "'DM Mono', monospace",
               fontSize: "0.54rem",
               letterSpacing: "0.1em",
               color: "var(--muted)",
-            }}>
-              Cover uploaded
-            </p>
+            }}>Cover uploaded</p>
           )}
         </div>
       </div>

@@ -2,14 +2,15 @@
 
 /*
   CoverUploader — uploads directly from the browser to Supabase Storage
-  via XMLHttpRequest so we get real onprogress events for a percentage bar.
-  After the XHR finishes, calls the lightweight saveCoverUrl server action
-  to write the public URL into books.cover_url.
+  via XMLHttpRequest with real onprogress events for a percentage bar.
 
-  This avoids Server Action timeouts and "stuck on uploading" entirely.
+  Fix: uses the browser Supabase client to get the active session JWT,
+  then sends that as the Bearer token — satisfying the authenticated INSERT policy.
+  The anon key alone is not enough; the user's session token is required.
 */
 
 import { useRef, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { saveCoverUrl } from "@/lib/actions/books";
 
 interface Props {
@@ -21,13 +22,13 @@ type UploadState = "idle" | "uploading" | "saving" | "success" | "error";
 
 export default function CoverUploader({ bookId, currentUrl }: Props) {
   const [state, setState]       = useState<UploadState>("idle");
-  const [progress, setProgress] = useState(0);       // 0–100
+  const [progress, setProgress] = useState(0);
   const [preview, setPreview]   = useState<string | null>(currentUrl ?? null);
   const [errorMsg, setErrorMsg] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const xhrRef   = useRef<XMLHttpRequest | null>(null);
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -43,6 +44,16 @@ export default function CoverUploader({ bookId, currentUrl }: Props) {
       return;
     }
 
+    // Get the active session JWT — this is what satisfies the authenticated policy
+    const supabase = createClient();
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+    if (sessionError || !session?.access_token) {
+      setErrorMsg("Session expired — please refresh the page and log in again.");
+      setState("error");
+      return;
+    }
+
     // Immediate local preview
     setPreview(URL.createObjectURL(file));
     setProgress(0);
@@ -50,7 +61,6 @@ export default function CoverUploader({ bookId, currentUrl }: Props) {
     setErrorMsg("");
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const anonKey     = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
     const ext         = (file.name.split(".").pop() ?? "jpg").toLowerCase();
     const filePath    = `${bookId}/cover-${Date.now()}.${ext}`;
     const uploadUrl   = `${supabaseUrl}/storage/v1/object/book-covers/${filePath}`;
@@ -58,23 +68,21 @@ export default function CoverUploader({ bookId, currentUrl }: Props) {
     const xhr = new XMLHttpRequest();
     xhrRef.current = xhr;
 
-    // Progress
+    // Real upload progress
     xhr.upload.onprogress = (ev) => {
       if (ev.lengthComputable) {
         setProgress(Math.round((ev.loaded / ev.total) * 100));
       }
     };
 
-    // Success
+    // Upload complete
     xhr.onload = async () => {
       if (xhr.status >= 200 && xhr.status < 300) {
         setProgress(100);
         setState("saving");
 
-        // Public URL pattern for Supabase Storage
         const publicUrl = `${supabaseUrl}/storage/v1/object/public/book-covers/${filePath}`;
 
-        // Persist URL to DB via server action
         const result = await saveCoverUrl(bookId, publicUrl);
         if (result.success) {
           setPreview(publicUrl);
@@ -84,7 +92,6 @@ export default function CoverUploader({ bookId, currentUrl }: Props) {
           setErrorMsg(result.error ?? "Saved to storage but could not update the database.");
         }
       } else {
-        // Parse Supabase error body if possible
         let msg = `Upload failed (HTTP ${xhr.status}).`;
         try {
           const body = JSON.parse(xhr.responseText);
@@ -97,7 +104,6 @@ export default function CoverUploader({ bookId, currentUrl }: Props) {
       }
     };
 
-    // Network error
     xhr.onerror = () => {
       setState("error");
       setErrorMsg("Network error — check your connection and try again.");
@@ -105,7 +111,8 @@ export default function CoverUploader({ bookId, currentUrl }: Props) {
     };
 
     xhr.open("POST", uploadUrl);
-    xhr.setRequestHeader("Authorization", `Bearer ${anonKey}`);
+    // Send the user's session JWT — satisfies the authenticated INSERT policy
+    xhr.setRequestHeader("Authorization", `Bearer ${session.access_token}`);
     xhr.setRequestHeader("x-upsert", "true");
     xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
     xhr.send(file);
@@ -120,7 +127,6 @@ export default function CoverUploader({ bookId, currentUrl }: Props) {
 
   const isUploading = state === "uploading" || state === "saving";
 
-  /* ── Progress bar colour ── */
   const barColor =
     state === "success" ? "#2d8a5e" :
     state === "error"   ? "var(--coral)" :
@@ -159,32 +165,21 @@ export default function CoverUploader({ bookId, currentUrl }: Props) {
         {/* Controls */}
         <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem", flex: 1 }}>
 
-          {/* Progress bar — visible during upload */}
+          {/* Progress bar */}
           {(isUploading || state === "success" || state === "error") && (
             <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-
-              {/* Track */}
-              <div style={{
-                height: "4px", borderRadius: "4px",
-                background: "var(--purple-light)", overflow: "hidden",
-                width: "100%",
-              }}>
+              <div style={{ height: "4px", borderRadius: "4px", background: "var(--purple-light)", overflow: "hidden", width: "100%" }}>
                 <div style={{
-                  height: "100%",
-                  width: `${progress}%`,
-                  background: barColor,
-                  borderRadius: "4px",
-                  transition: "width 0.25s ease, background 0.3s ease",
+                  height: "100%", width: `${progress}%`, background: barColor,
+                  borderRadius: "4px", transition: "width 0.25s ease, background 0.3s ease",
                 }} />
               </div>
-
-              {/* Percentage label */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.54rem", letterSpacing: "0.1em", color: "var(--muted)" }}>
-                  {state === "saving"  && "Saving…"}
-                  {state === "uploading" && `Uploading…`}
-                  {state === "success" && "✓ Cover saved"}
-                  {state === "error"   && "✕ Upload failed"}
+                <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.54rem", letterSpacing: "0.1em", color: state === "error" ? "var(--coral)" : "var(--muted)" }}>
+                  {state === "uploading" && "Uploading…"}
+                  {state === "saving"    && "Saving…"}
+                  {state === "success"   && "✓ Cover saved"}
+                  {state === "error"     && "✕ Upload failed"}
                 </span>
                 {state === "uploading" && (
                   <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.54rem", color: "var(--purple)", fontWeight: 600 }}>
@@ -195,21 +190,21 @@ export default function CoverUploader({ bookId, currentUrl }: Props) {
             </div>
           )}
 
-          {/* Error message */}
+          {/* Error detail */}
           {state === "error" && (
             <p style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.54rem", color: "var(--coral)", lineHeight: 1.55 }}>
               {errorMsg}
             </p>
           )}
 
-          {/* Idle: current cover status */}
+          {/* Idle with existing cover */}
           {state === "idle" && preview && (
             <p style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.54rem", letterSpacing: "0.1em", color: "var(--muted)" }}>
               Cover uploaded
             </p>
           )}
 
-          {/* Action buttons */}
+          {/* Buttons */}
           <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
             <button
               type="button"

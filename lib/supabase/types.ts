@@ -37,6 +37,7 @@ export interface PoemRow {
   title: string;
   content: string;
   tags: string[];
+  image_url: string | null;   /* optional mood / artwork image */
   status: PoemStatus;
   published_at: string | null;
   created_at: string;

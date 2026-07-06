@@ -2363,3 +2363,52 @@ html, body {
     font-size: 1.06rem;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   POEM MOOD IMAGE — Sprint 3 media update
+   Renders only when poem.image_url exists. Layout unchanged when absent.
+   Ratio: 3:1 panoramic — atmospheric, not illustrative.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.poem-page-image-wrap {
+  width: 100%;
+  aspect-ratio: 3 / 1;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 2.25rem;
+  position: relative;
+}
+
+.poem-page-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* Soft fade-to-background at the bottom so the image breathes into the text */
+.poem-page-image-wrap::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  background: linear-gradient(to bottom, transparent, var(--paper, #FEFCFA));
+  pointer-events: none;
+}
+
+@media (max-width: 1024px) {
+  .poem-page-image-wrap {
+    border-radius: 7px;
+    margin-bottom: 1.75rem;
+  }
+}
+
+/* ── Spinner keyframe (shared by all uploaders) ─────────────────────────── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

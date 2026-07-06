@@ -38,6 +38,22 @@ export default function NewPoem() {
           }}>Cancel</Link>
         </div>
       </form>
+
+      {/* Image upload note */}
+      <div style={{
+        marginTop: "2rem",
+        padding: "1rem 1.25rem",
+        background: "var(--bg-soft)",
+        borderRadius: "8px",
+        border: "1px solid var(--lavender-border)",
+      }}>
+        <p style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.58rem", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--purple)", marginBottom: "0.35rem" }}>
+          Mood Image
+        </p>
+        <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.82rem", color: "var(--muted)", lineHeight: 1.6, margin: 0 }}>
+          Save the poem first, then open it to add an optional atmospheric image.
+        </p>
+      </div>
     </div>
   );
 }

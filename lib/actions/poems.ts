@@ -61,3 +61,18 @@ export async function deletePoem(id: string) {
   if (error) throw new Error(error.message);
   revalidatePath("/admin/poems");
 }
+
+/* Called from PoemImageUploader after client-side storage upload */
+export async function savePoemImageUrl(poemId: string, publicUrl: string): Promise<void> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const { error } = await (supabase.from("poems") as any)
+    .update({ image_url: publicUrl || null })
+    .eq("id", poemId);
+
+  if (error) throw new Error(error.message);
+  revalidatePath("/poems");
+  revalidatePath("/admin/poems");
+}

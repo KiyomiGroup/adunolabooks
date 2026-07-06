@@ -87,6 +87,18 @@ export default async function PoemPage({ params }: { params: Promise<Params> }) 
           ← All Poems
         </Link>
 
+        {/* Mood image — only renders when image_url is set */}
+        {poem.image_url && (
+          <div className="poem-page-image-wrap">
+            <img
+              src={poem.image_url}
+              alt=""
+              role="presentation"
+              className="poem-page-image"
+            />
+          </div>
+        )}
+
         {/* Title */}
         <h1 className="poem-page-title">{poem.title}</h1>
 

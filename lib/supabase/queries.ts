@@ -167,3 +167,22 @@ export async function adminGetAllPoems(): Promise<PoemRow[]> {
   if (error) throw new Error(error.message);
   return data ?? [];
 }
+
+
+/* ── Single poem by id ───────────────────────────────────────────────────── */
+
+export async function getPoemById(id: string): Promise<PoemRow | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("poems")
+    .select("*")
+    .eq("id", id)
+    .eq("status", "published")
+    .single();
+
+  if (error) {
+    console.error("[getPoemById]", error.message);
+    return null;
+  }
+  return data;
+}

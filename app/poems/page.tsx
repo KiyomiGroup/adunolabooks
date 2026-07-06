@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import TopNav from "@/components/TopNav";
 import Footer from "@/components/Footer";
+import { WaveDown } from "@/components/WaveDivider";
 import { getAllPoems } from "@/lib/supabase/queries";
 import type { PoemRow } from "@/lib/supabase/types";
 
@@ -11,126 +13,151 @@ export const metadata: Metadata = {
   description: "Poetry by Adunola — serialized verse, published one poem at a time.",
 };
 
-function PoemFull({ poem }: { poem: PoemRow }) {
-  const lines = poem.content.split("\n");
-  const publishedLabel = poem.published_at
-    ? new Date(poem.published_at).toLocaleDateString("en-GB", {
-        day: "numeric", month: "long", year: "numeric",
-      })
-    : "";
+/* ── Helpers ──────────────────────────────────────────────────────────────── */
+
+function formatDate(iso: string | null): string {
+  if (!iso) return "";
+  return new Date(iso).toLocaleDateString("en-GB", {
+    day: "numeric", month: "long", year: "numeric",
+  });
+}
+
+/* Returns up to `count` non-empty lines for a card preview */
+function previewLines(content: string, count: number): string[] {
+  return content
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .slice(0, count);
+}
+
+/* ── Featured poem card (full-width, first/latest poem) ──────────────────── */
+function PoemCardFeatured({ poem }: { poem: PoemRow }) {
+  const lines = previewLines(poem.content, 5);
+  const date  = formatDate(poem.published_at);
 
   return (
-    <article style={{
-      background: "var(--white)",
-      border: "1.5px solid var(--lavender-border)",
-      borderRadius: "12px",
-      padding: "2.5rem 2rem",
-      position: "relative",
-      overflow: "hidden",
-    }}>
-      {/* Decorative quote mark */}
-      <div aria-hidden="true" style={{
-        position: "absolute", top: "-1rem", right: "1.25rem",
-        fontFamily: "'Cormorant Garamond', serif", fontSize: "9rem",
-        color: "var(--purple)", opacity: 0.05, lineHeight: 1,
-        pointerEvents: "none", userSelect: "none",
-      }}>"</div>
+    <Link href={`/poems/${poem.id}`} className="poem-card-featured">
+      {/* Left side: title + label */}
+      <div>
+        <span className="poem-featured-chip">Latest Poem</span>
+        <h2 className="poem-card-title">{poem.title}</h2>
 
-      <h2 className="font-display" style={{
-        fontFamily: "'Cormorant Garamond', serif",
-        fontSize: "1.45rem", fontStyle: "italic",
-        color: "var(--purple-dark)", marginBottom: "1.5rem", fontWeight: 400,
-      }}>
-        {poem.title}
-      </h2>
+        <div className="poem-card-footer">
+          {date && <span className="poem-card-date">{date}</span>}
+          {poem.tags?.slice(0, 3).map((tag) => (
+            <span key={tag} className="poem-card-tag">{tag}</span>
+          ))}
+          <span className="poem-card-read-link">Read poem →</span>
+        </div>
+      </div>
 
-      <div style={{
-        borderLeft: "2px solid var(--purple-light)",
-        paddingLeft: "1.5rem", marginBottom: "1.75rem",
-      }}>
+      {/* Right side: lines preview */}
+      <div className="poem-card-lines" style={{ marginBottom: 0 }}>
         {lines.map((line, i) => (
-          line.trim() === "" ? (
-            <div key={i} style={{ height: "1em" }} />
-          ) : (
-            <span key={i} className="font-display" style={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: "1.05rem", fontStyle: "italic",
-              color: "var(--ink)", lineHeight: 1.85, display: "block",
-            }}>
-              {line}
-            </span>
-          )
+          <span key={i} className="poem-card-line">{line}</span>
         ))}
+        <span className="poem-card-ellipsis">…</span>
       </div>
-
-      {/* Footer row */}
-      <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
-        {publishedLabel && (
-          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.6rem", color: "var(--muted)", letterSpacing: "0.1em" }}>
-            {publishedLabel}
-          </span>
-        )}
-        {poem.tags?.length > 0 && (
-          <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
-            {poem.tags.map((tag) => (
-              <span key={tag} style={{
-                fontFamily: "'DM Mono', monospace", fontSize: "0.52rem",
-                letterSpacing: "0.14em", textTransform: "uppercase",
-                color: "var(--purple)", background: "var(--purple-light)",
-                padding: "0.2rem 0.6rem", borderRadius: "2px",
-              }}>
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-    </article>
+    </Link>
   );
 }
 
+/* ── Regular poem card ────────────────────────────────────────────────────── */
+function PoemCard({ poem }: { poem: PoemRow }) {
+  const lines = previewLines(poem.content, 3);
+  const date  = formatDate(poem.published_at);
+
+  return (
+    <Link href={`/poems/${poem.id}`} className="poem-card">
+      <div aria-hidden="true" className="poem-card-quote-mark">"</div>
+
+      <h2 className="poem-card-title">{poem.title}</h2>
+
+      <div className="poem-card-lines">
+        {lines.map((line, i) => (
+          <span key={i} className="poem-card-line">{line}</span>
+        ))}
+        <span className="poem-card-ellipsis">…</span>
+      </div>
+
+      <div className="poem-card-footer">
+        {date && <span className="poem-card-date">{date}</span>}
+        {poem.tags?.slice(0, 2).map((tag) => (
+          <span key={tag} className="poem-card-tag">{tag}</span>
+        ))}
+        <span className="poem-card-read-link">Read →</span>
+      </div>
+    </Link>
+  );
+}
+
+/* ── Page ─────────────────────────────────────────────────────────────────── */
 export default async function PoemsPage() {
   const poems = await getAllPoems();
+
+  /* First poem is featured; the rest fill the grid */
+  const [featured, ...rest] = poems;
 
   return (
     <>
       <TopNav />
       <main>
-        <section style={{ background: "var(--bg-soft)", borderBottom: "1px solid var(--lavender-border)", padding: "3.5rem 0 2.5rem" }}>
-          <div className="container">
-            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.58rem", letterSpacing: "0.28em", textTransform: "uppercase", color: "var(--purple)", marginBottom: "0.75rem" }}>
-              From the archive
-            </p>
-            <h1 className="font-display" style={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: "clamp(2.2rem, 5vw, 3.5rem)",
-              fontWeight: 400, color: "var(--ink)", lineHeight: 1.1,
-              marginBottom: "1rem",
-            }}>
+        {/* Header */}
+        <section style={{
+          background: "var(--bg-soft)",
+          borderBottom: "1px solid var(--lavender-border)",
+          padding: "3.5rem 0 2.5rem",
+        }}>
+          <div className="container fade-up">
+            <p className="section-tag">From the archive</p>
+            <h1
+              className="font-display"
+              style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: "clamp(2.2rem, 5vw, 3.5rem)",
+                fontWeight: 400,
+                color: "var(--ink)",
+                lineHeight: 1.1,
+                marginBottom: "1rem",
+              }}
+            >
               Poetry
             </h1>
-            <p style={{ fontSize: "0.875rem", color: "var(--muted)", lineHeight: 1.8, maxWidth: "42ch" }}>
-              Verse published one poem at a time — grief, place, memory, and the quiet spaces between.
+            <p className="lede-text">
+              Verse published one poem at a time —{" "}
+              grief, place, memory, and the quiet spaces between.
             </p>
           </div>
         </section>
 
-        <section style={{ padding: "4rem 0 6rem" }}>
+        <WaveDown fill="#FFFFFF" />
+
+        <section style={{ padding: "1rem 0 6rem", background: "#FFFFFF", marginTop: "-2px" }}>
           <div className="container">
             {poems.length === 0 ? (
               <div style={{ padding: "5rem 0", textAlign: "center" }}>
-                <p className="font-display" style={{
-                  fontFamily: "'Cormorant Garamond', serif",
-                  fontSize: "1.3rem", fontStyle: "italic",
-                  color: "var(--muted)", margin: 0,
-                }}>
+                <p
+                  className="font-display"
+                  style={{
+                    fontFamily: "'Cormorant Garamond', serif",
+                    fontSize: "1.3rem",
+                    fontStyle: "italic",
+                    color: "var(--muted)",
+                    margin: 0,
+                  }}
+                >
                   The first poems are still being written…
                 </p>
               </div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "2rem", maxWidth: "680px" }}>
-                {poems.map((poem) => (
-                  <PoemFull key={poem.id} poem={poem} />
+              <div className="poems-library-grid">
+                {/* Latest poem — featured full-width */}
+                {featured && <PoemCardFeatured poem={featured} />}
+
+                {/* Remaining poems — two-column cards */}
+                {rest.map((poem) => (
+                  <PoemCard key={poem.id} poem={poem} />
                 ))}
               </div>
             )}

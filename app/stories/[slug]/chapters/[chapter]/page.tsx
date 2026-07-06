@@ -20,20 +20,34 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 /*
-  ── Paragraph renderer ───────────────────────────────────────────────────────
-  Each string in ch.content is one visual paragraph.
-  If it contains \n (intentional line-breaks — dialogue, poetry, stage
-  directions), we split on \n and insert <br /> between lines so the
-  author's rhythm is preserved in the browser.
-
-  The drop-cap CSS rule (p:first-of-type::first-letter) still applies to
-  the first rendered <p> because we use real <p> tags, not divs.
+  ── Paragraph ────────────────────────────────────────────────────────────────
+  Renders one prose paragraph. \n within the string → <br /> so
+  intentional line-breaks (dialogue, poetry-within-prose) are honoured.
+  Uses a real <p> tag so the drop-cap CSS fires on the first paragraph.
 */
-function Paragraph({ text, isFirst }: { text: string; isFirst: boolean }) {
+function Paragraph({ text }: { text: string }) {
   const lines = text.split("\n");
-
   return (
     <p>
+      {lines.map((line, i) => (
+        <span key={i}>
+          {i > 0 && <br />}
+          {line}
+        </span>
+      ))}
+    </p>
+  );
+}
+
+/*
+  ── PrologueText ─────────────────────────────────────────────────────────────
+  Same \n → <br /> treatment for the prologue block.
+  The prologue CSS overrides the drop-cap rule so it stays clean italic prose.
+*/
+function PrologueText({ text }: { text: string }) {
+  const lines = text.split("\n");
+  return (
+    <p className="reader-prologue-text">
       {lines.map((line, i) => (
         <span key={i}>
           {i > 0 && <br />}
@@ -89,10 +103,14 @@ export default async function ChapterReaderPage({ params }: { params: Promise<Pa
 
         {ch.status === "available" && ch.content ? (
           <>
-            {/* ── Prologue — shown in italics before the chapter body ── */}
+            {/*
+              ── Prologue ───────────────────────────────────────────────
+              Shown before the chapter body in a tinted italic block.
+              \n within the prologue string → <br /> via PrologueText.
+            */}
             {ch.prologue && (
               <div className="reader-prologue">
-                <p className="reader-prologue-text">{ch.prologue}</p>
+                <PrologueText text={ch.prologue} />
                 <div className="reader-prologue-rule" aria-hidden="true" />
               </div>
             )}
@@ -105,7 +123,7 @@ export default async function ChapterReaderPage({ params }: { params: Promise<Pa
             */}
             <div className="reader-body">
               {ch.content.map((paragraph, i) => (
-                <Paragraph key={i} text={paragraph} isFirst={i === 0} />
+                <Paragraph key={i} text={paragraph} />
               ))}
             </div>
 

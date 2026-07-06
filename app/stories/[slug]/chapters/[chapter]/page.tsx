@@ -19,6 +19,31 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   };
 }
 
+/*
+  ── Paragraph renderer ───────────────────────────────────────────────────────
+  Each string in ch.content is one visual paragraph.
+  If it contains \n (intentional line-breaks — dialogue, poetry, stage
+  directions), we split on \n and insert <br /> between lines so the
+  author's rhythm is preserved in the browser.
+
+  The drop-cap CSS rule (p:first-of-type::first-letter) still applies to
+  the first rendered <p> because we use real <p> tags, not divs.
+*/
+function Paragraph({ text, isFirst }: { text: string; isFirst: boolean }) {
+  const lines = text.split("\n");
+
+  return (
+    <p>
+      {lines.map((line, i) => (
+        <span key={i}>
+          {i > 0 && <br />}
+          {line}
+        </span>
+      ))}
+    </p>
+  );
+}
+
 export default async function ChapterReaderPage({ params }: { params: Promise<Params> }) {
   const { slug, chapter } = await params;
   const chapterNumber = Number(chapter);
@@ -47,6 +72,7 @@ export default async function ChapterReaderPage({ params }: { params: Promise<Pa
       />
 
       <article className="reader-content-wrap fade-up">
+        {/* ── Chapter heading ── */}
         <div className="reader-meta-block">
           <p className="reader-eyebrow">{story.title}</p>
           <h1 className="reader-title font-display">{ch.title}</h1>
@@ -63,7 +89,7 @@ export default async function ChapterReaderPage({ params }: { params: Promise<Pa
 
         {ch.status === "available" && ch.content ? (
           <>
-            {/* ── Prologue — optional, shown in italics before main body ── */}
+            {/* ── Prologue — shown in italics before the chapter body ── */}
             {ch.prologue && (
               <div className="reader-prologue">
                 <p className="reader-prologue-text">{ch.prologue}</p>
@@ -71,13 +97,19 @@ export default async function ChapterReaderPage({ params }: { params: Promise<Pa
               </div>
             )}
 
-            {/* ── Main chapter body ── */}
+            {/*
+              ── Main chapter body ───────────────────────────────────────
+              Each element of ch.content is one paragraph.
+              \n within an element → <br /> (preserves dialogue/poetry rhythm).
+              The first <p> receives the drop-cap via CSS :first-of-type.
+            */}
             <div className="reader-body">
               {ch.content.map((paragraph, i) => (
-                <p key={i}>{paragraph}</p>
+                <Paragraph key={i} text={paragraph} isFirst={i === 0} />
               ))}
             </div>
 
+            {/* ── End ornament ── */}
             <div className="reader-ornament" aria-hidden="true">
               <span>❧</span>
             </div>
@@ -91,7 +123,12 @@ export default async function ChapterReaderPage({ params }: { params: Promise<Pa
 
       <ChapterNav storySlug={story.slug} prevChapter={prevChapter} nextChapter={nextChapter} />
       <div className="u-desktop-only" style={{ height: "4rem" }} aria-hidden="true" />
-      <MobileBottomBar ctaLabel={mobileCtaLabel} ctaHref={mobileCtaHref} counterLabel={mobileCounter} homeHref="/" />
+      <MobileBottomBar
+        ctaLabel={mobileCtaLabel}
+        ctaHref={mobileCtaHref}
+        counterLabel={mobileCounter}
+        homeHref="/"
+      />
     </div>
   );
 }

@@ -12,11 +12,109 @@ import type { Story } from "./stories-types";
 import type { BookRow, ChapterRow } from "./supabase/types";
 import { getAllBooks, getBookBySlug, getChaptersForBook } from "./supabase/queries";
 
+/* ── Content deserialiser ────────────────────────────────────────────────────
+  Converts the raw `content` column value into a clean string[] where each
+  element is one visual paragraph (or a block of intentional line-breaks).
+
+  Handles every realistic storage format:
+    A) Correct: JSON array of paragraph strings  → use as-is after flattening
+    B) Old/pasted: plain text with \n\n breaks   → split into paragraphs
+    C) Pasted: plain text with \n breaks only    → split on single newlines
+    D) JSON array with a single huge element     → split that element further
+
+  Single \n within an element is preserved: the renderer turns them into
+  <br /> so poetry-style line breaks and dialogue are rendered correctly.
+*/
+function parseContent(raw: string): string[] {
+  if (!raw || !raw.trim()) return [];
+
+  // ── Try JSON parse first ─────────────────────────────────────────────────
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    // Not JSON — treat as plain text and fall through
+    parsed = null;
+  }
+
+  if (Array.isArray(parsed)) {
+    // Flatten: some elements may themselves contain \n\n (old serialiser bug)
+    const paragraphs: string[] = [];
+    for (const item of parsed) {
+      if (typeof item !== "string") continue;
+      const trimmed = item.trim();
+      if (!trimmed) continue;
+
+      if (trimmed.includes("\n\n")) {
+        // Element has double-newline sub-blocks — split it
+        const subBlocks = trimmed.split(/\n{2,}/);
+        for (const b of subBlocks) {
+          const t = b.trim();
+          if (t) paragraphs.push(t);
+        }
+      } else {
+        // Single element (may have intentional \n line-breaks inside) — keep whole
+        paragraphs.push(trimmed);
+      }
+    }
+    // If we ended up with exactly one very long element that has single
+    // newlines, and those newlines look like paragraph breaks (capital
+    // letter after sentence-ending punctuation), split them further.
+    if (paragraphs.length === 1 && paragraphs[0].includes("\n")) {
+      return splitOnSentenceBoundaries(paragraphs[0]);
+    }
+    return paragraphs.length > 0 ? paragraphs : [];
+  }
+
+  // ── Plain text fallback ───────────────────────────────────────────────────
+  const text = (typeof parsed === "string" ? parsed : raw).trim();
+  if (text.includes("\n\n")) {
+    // Double-newline separated → split into paragraph array
+    return text.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+  }
+  // Only single newlines — try sentence-boundary detection
+  return splitOnSentenceBoundaries(text);
+}
+
+/*
+  Heuristic: split a block of single-newline text into paragraphs where
+  each newline that follows sentence-ending punctuation and precedes a
+  capital letter is treated as a paragraph break.
+  Newlines that don't match this pattern are kept (intentional line breaks).
+*/
+function splitOnSentenceBoundaries(text: string): string[] {
+  const lines = text.split("\n");
+  const groups: string[] = [];
+  let current: string[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const next = lines[i + 1]?.trim() ?? "";
+
+    current.push(line);
+
+    const endsWithSentence = /[.!?"'\u2019\u201d]\s*$/.test(line.trim());
+    const nextStartsCapital = /^[A-Z\u201c\u2018"]/.test(next);
+
+    if (endsWithSentence && nextStartsCapital && next.length > 0) {
+      // Paragraph boundary — flush current group
+      const joined = current.join("\n").trim();
+      if (joined) groups.push(joined);
+      current = [];
+    }
+  }
+
+  // Flush remaining lines
+  const tail = current.join("\n").trim();
+  if (tail) groups.push(tail);
+
+  return groups.length > 0 ? groups : [text.trim()];
+}
+
 /* ── Supabase → Story adapter ──────────────────────────────────────────── */
 
 function chapterRowToChapter(row: ChapterRow) {
-  let paragraphs: string[] = [];
-  try { paragraphs = JSON.parse(row.content); } catch { paragraphs = []; }
+  const paragraphs = parseContent(row.content);
 
   return {
     number: row.chapter_number,
@@ -61,7 +159,7 @@ async function bookRowToStory(book: BookRow): Promise<Story> {
     stats: { readers: "—", avgReadTime: "—" }, /* Sprint 4: real stats */
     readingProgress: 0,                          /* Sprint 4: per-user  */
     chapters,
-    coverUrl: book.cover_url ?? null,            /* Supabase Storage public URL */
+    coverUrl: book.cover_url ?? null,
   } as Story & { coverUrl: string | null };
 }
 

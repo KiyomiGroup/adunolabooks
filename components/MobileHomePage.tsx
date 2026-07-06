@@ -32,7 +32,7 @@ export default function MobileHomePage({
       <div className="m-home-hero-row">
         {/* Book cover — larger, with shadow */}
         <div className="m-home-cover">
-          <BookCover title={featured.title} accent={featured.accent} size="sm" />
+          <BookCover title={featured.title} accent={featured.accent} coverUrl={(featured as any).coverUrl ?? null} size="sm" />
         </div>
 
         <div className="m-home-info">

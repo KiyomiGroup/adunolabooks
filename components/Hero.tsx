@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 
 /*
   Hero — DESKTOP ONLY.
@@ -86,8 +87,8 @@ export default function Hero() {
               Serialized fiction, poetry, and immersive storytelling — published one chapter at a time.
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
-              <button className="btn-primary">View More →</button>
-              <button className="btn-ghost">Continue Reading ↗</button>
+              <Link href="/stories" className="btn-primary" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>View More →</Link>
+              <Link href="/stories" className="btn-ghost" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>Continue Reading ↗</Link>
             </div>
           </div>
 

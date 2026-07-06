@@ -1,18 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+/*
+  Hero — DESKTOP ONLY.
+
+  This component is wrapped in <div className="u-desktop-only"> in page.tsx,
+  so it never needs to handle mobile. The old isMobile/useEffect check was
+  causing the desktop layout to flash on mobile before React hydrated,
+  overriding MobileHomePage. Removed entirely.
+*/
 
 const FEATURED_BOOK = {
   title: "Dust and Delay",
-  author: "Adunola",
-  year: "2025",
   chapterCount: 12,
   readTime: "18 min",
 };
 
 const STATS = [
   { value: "400+", label: "Stories Published", color: "var(--purple)" },
-  { value: "12k",  label: "Readers This Month", color: "var(--teal)"   },
+  { value: "12k",  label: "Readers This Month", color: "var(--teal)"  },
 ];
 
 const PAGE_LINES = [100, 92, 100, 78, 100, 88, 100, 65, 100, 84, 100, 72];
@@ -64,78 +69,12 @@ function OpenBook() {
   );
 }
 
-/* ── Mobile book cover — compact single-page card ── */
-function MobileBookCard() {
-  return (
-    <div style={{ display: "flex", gap: "14px", alignItems: "flex-start", padding: "1.25rem 0 1rem" }}>
-      {/* Cover */}
-      <div style={{ width: "90px", minWidth: "90px", height: "120px", background: "linear-gradient(145deg, var(--purple) 0%, var(--purple-deep) 100%)", borderRadius: "5px 5px 3px 3px", padding: "10px", display: "flex", flexDirection: "column", justifyContent: "flex-end", boxShadow: "0 8px 22px rgba(61,15,158,0.28), inset 0 1px 0 rgba(255,255,255,0.12)", position: "relative", overflow: "hidden" }}>
-        <span style={{ position: "absolute", top: "6px", left: "8px", fontFamily: "'Cormorant Garamond', serif", fontSize: "2rem", fontStyle: "italic", color: "rgba(255,255,255,0.22)", lineHeight: 1 }}>W</span>
-        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-          <span style={{ display: "block", height: "1.5px", background: "rgba(255,255,255,0.5)", borderRadius: "1px" }} />
-          <span style={{ display: "block", height: "1.5px", background: "rgba(255,255,255,0.5)", borderRadius: "1px", width: "70%" }} />
-          <span style={{ display: "block", height: "1.5px", background: "rgba(255,255,255,0.5)", borderRadius: "1px", width: "85%" }} />
-        </div>
-      </div>
-      {/* Meta */}
-      <div style={{ flex: 1, paddingTop: "2px" }}>
-        <p style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.52rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--purple)", marginBottom: "5px" }}>Literary Fiction</p>
-        <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.18rem", fontWeight: 400, color: "var(--ink)", lineHeight: 1.18, marginBottom: "5px" }}>Where the Rivers Remember</h2>
-        <p style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.58rem", letterSpacing: "0.1em", color: "var(--muted)", marginBottom: "8px" }}>by Adunola Osei</p>
-        <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.78rem", color: "var(--muted)", lineHeight: 1.55 }}>A story of memory, loss, and the rivers that carry what we cannot hold…</p>
-      </div>
-    </div>
-  );
-}
-
 export default function Hero() {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth <= 768);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
-
-  if (isMobile) {
-    return (
-      <section style={{ background: "var(--bg-soft)", borderBottom: "1px solid var(--lavender-border)" }} aria-label="Hero">
-        <div className="container">
-          {/* Brand label */}
-          <div style={{ paddingTop: "1.25rem", marginBottom: "0.25rem" }}>
-            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.52rem", letterSpacing: "0.28em", textTransform: "uppercase", color: "var(--purple)", background: "var(--purple-light)", padding: "0.3rem 0.75rem", borderRadius: "2px" }}>Literary Platform</span>
-          </div>
-
-          {/* Headline */}
-          <h1 className="font-display fade-up" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(2.6rem, 12vw, 3.4rem)", fontWeight: 400, lineHeight: 1.08, color: "var(--ink)", marginBottom: "1rem", letterSpacing: "-0.015em" }}>
-            Stories that live
-            <em style={{ fontStyle: "italic", color: "var(--purple)", display: "block", textShadow: "0 2px 24px rgba(123,63,242,0.15)" }}>on the page.</em>
-          </h1>
-
-          {/* Body copy */}
-          <p style={{ fontSize: "0.875rem", color: "var(--muted)", lineHeight: 1.8, marginBottom: "1.5rem" }}>
-            Serialized fiction, poetry, and immersive storytelling — published one chapter at a time.
-          </p>
-
-          {/* CTA buttons */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.7rem", marginBottom: "1.5rem" }}>
-            <button className="btn-primary" style={{ width: "100%", justifyContent: "center" }}>View More →</button>
-            <button className="btn-ghost" style={{ width: "100%", justifyContent: "center" }}>Continue Reading ↗</button>
-          </div>
-
-          {/* Divider */}
-          <div style={{ height: "1px", background: "var(--lavender-border)", margin: "0.5rem 0 0" }} />
-        </div>
-      </section>
-    );
-  }
-
-  /* ── Desktop layout (unchanged) ── */
   return (
     <section style={{ background: "var(--bg-soft)", borderBottom: "1px solid var(--lavender-border)" }} aria-label="Hero">
       <div className="container">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1.25fr 1fr", gridTemplateRows: "1fr auto", gap: "2.5rem", alignItems: "center", minHeight: "88vh", paddingTop: "4rem", paddingBottom: "3rem" }}>
+
           {/* LEFT */}
           <div className="fade-up">
             <span style={{ display: "inline-block", fontFamily: "'DM Mono', monospace", fontSize: "0.58rem", letterSpacing: "0.28em", textTransform: "uppercase", color: "var(--purple)", background: "var(--purple-light)", padding: "0.35rem 0.85rem", borderRadius: "2px", marginBottom: "1.5rem" }}>Literary Platform</span>
@@ -143,7 +82,9 @@ export default function Hero() {
               Stories that live
               <em style={{ fontStyle: "italic", color: "var(--purple)", display: "block", textShadow: "0 2px 24px rgba(123,63,242,0.15)" }}>on the page.</em>
             </h1>
-            <p style={{ fontSize: "0.875rem", color: "var(--muted)", lineHeight: 1.8, marginBottom: "2.25rem", maxWidth: "26ch" }}>Serialized fiction, poetry, and immersive storytelling — published one chapter at a time.</p>
+            <p style={{ fontSize: "0.875rem", color: "var(--muted)", lineHeight: 1.8, marginBottom: "2.25rem", maxWidth: "26ch" }}>
+              Serialized fiction, poetry, and immersive storytelling — published one chapter at a time.
+            </p>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
               <button className="btn-primary">View More →</button>
               <button className="btn-ghost">Continue Reading ↗</button>
@@ -156,26 +97,38 @@ export default function Hero() {
           {/* RIGHT */}
           <div className="fade-up delay-2" style={{ display: "flex", flexDirection: "column", gap: "1rem", alignItems: "flex-end" }}>
             {STATS.map((stat) => (
-              <div key={stat.label} style={{ background: "var(--white)", border: "1.5px solid var(--lavender-border)", borderRadius: "12px", padding: "1.4rem", width: "100%", maxWidth: "188px", boxShadow: "0 2px 12px var(--lavender-shadow)", cursor: "default", transition: "box-shadow 0.4s var(--ease-paper), transform 0.4s var(--ease-paper)" }}
+              <div
+                key={stat.label}
+                style={{ background: "var(--white)", border: "1.5px solid var(--lavender-border)", borderRadius: "12px", padding: "1.4rem", width: "100%", maxWidth: "188px", boxShadow: "0 2px 12px var(--lavender-shadow)", cursor: "default", transition: "box-shadow 0.4s var(--ease-paper), transform 0.4s var(--ease-paper)" }}
                 onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.boxShadow = "0 8px 28px rgba(123,63,242,0.14)"; el.style.transform = "translateY(-2px)"; }}
-                onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.boxShadow = "0 2px 12px var(--lavender-shadow)"; el.style.transform = "none"; }}>
+                onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.boxShadow = "0 2px 12px var(--lavender-shadow)"; el.style.transform = "none"; }}
+              >
                 <div className="font-display" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2.4rem", fontWeight: 500, color: stat.color, lineHeight: 1, marginBottom: "0.35rem" }}>{stat.value}</div>
                 <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.56rem", letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--muted)" }}>{stat.label}</div>
               </div>
             ))}
-            <div style={{ background: "var(--purple)", borderRadius: "12px", padding: "1.4rem", width: "100%", maxWidth: "188px", cursor: "pointer", boxShadow: "0 4px 20px rgba(123,63,242,0.28), inset 0 1px 0 rgba(255,255,255,0.12)", transition: "all 0.4s var(--ease-paper)" }}
+
+            <div
+              style={{ background: "var(--purple)", borderRadius: "12px", padding: "1.4rem", width: "100%", maxWidth: "188px", cursor: "pointer", boxShadow: "0 4px 20px rgba(123,63,242,0.28), inset 0 1px 0 rgba(255,255,255,0.12)", transition: "all 0.4s var(--ease-paper)" }}
               onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.background = "var(--purple-dark)"; el.style.transform = "translateY(-2px)"; el.style.boxShadow = "0 8px 32px rgba(123,63,242,0.38)"; }}
-              onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.background = "var(--purple)"; el.style.transform = "none"; el.style.boxShadow = "0 4px 20px rgba(123,63,242,0.28), inset 0 1px 0 rgba(255,255,255,0.12)"; }}>
+              onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.background = "var(--purple)"; el.style.transform = "none"; el.style.boxShadow = "0 4px 20px rgba(123,63,242,0.28), inset 0 1px 0 rgba(255,255,255,0.12)"; }}
+            >
               <p style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.52rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)", marginBottom: "0.5rem" }}>Ready to connect?</p>
               <p className="font-display" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.2rem", fontStyle: "italic", color: "white", lineHeight: 1.25 }}>Book a Call</p>
               <p style={{ color: "rgba(255,255,255,0.45)", marginTop: "0.5rem", fontSize: "1rem" }}>→</p>
             </div>
+
             <div style={{ display: "flex", gap: "0.55rem" }}>
               {["✕", "in", "ig"].map((icon) => (
-                <button key={icon} style={{ width: "32px", height: "32px", borderRadius: "50%", border: "1.5px solid var(--lavender-border)", background: "var(--white)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "0.68rem", fontWeight: 600, color: "var(--purple)", boxShadow: "0 2px 8px var(--lavender-shadow)", transition: "all 0.35s var(--ease-paper)" }}
+                <button
+                  key={icon}
+                  style={{ width: "32px", height: "32px", borderRadius: "50%", border: "1.5px solid var(--lavender-border)", background: "var(--white)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "0.68rem", fontWeight: 600, color: "var(--purple)", boxShadow: "0 2px 8px var(--lavender-shadow)", transition: "all 0.35s var(--ease-paper)" }}
                   onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.background = "var(--purple)"; el.style.color = "white"; el.style.borderColor = "var(--purple)"; }}
                   onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.background = "var(--white)"; el.style.color = "var(--purple)"; el.style.borderColor = "var(--lavender-border)"; }}
-                  aria-label={icon}>{icon}</button>
+                  aria-label={icon}
+                >
+                  {icon}
+                </button>
               ))}
             </div>
           </div>
@@ -183,14 +136,20 @@ export default function Hero() {
           {/* BOTTOM ROW */}
           <div className="fade-up delay-3" style={{ gridColumn: "1 / -1", display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: "2rem", borderTop: "1px solid var(--lavender-border)", paddingTop: "1.75rem" }}>
             <p style={{ fontSize: "0.72rem", color: "var(--muted-light)", letterSpacing: "0.04em" }}>Scroll to explore the library</p>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.4rem", cursor: "pointer" }} onClick={() => document.getElementById("stories-section")?.scrollIntoView({ behavior: "smooth" })}>
+            <div
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.4rem", cursor: "pointer" }}
+              onClick={() => document.getElementById("stories-section")?.scrollIntoView({ behavior: "smooth" })}
+            >
               <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.56rem", letterSpacing: "0.22em", textTransform: "uppercase", color: "var(--muted-light)" }}>See More</span>
-              <div style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1.5px solid var(--lavender-border)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--purple)", background: "var(--white)", boxShadow: "0 2px 10px var(--lavender-shadow)", transition: "all 0.35s var(--ease-paper)", fontSize: "0.95rem" }}
+              <div
+                style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1.5px solid var(--lavender-border)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--purple)", background: "var(--white)", boxShadow: "0 2px 10px var(--lavender-shadow)", transition: "all 0.35s var(--ease-paper)", fontSize: "0.95rem" }}
                 onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.background = "var(--purple)"; el.style.color = "white"; el.style.borderColor = "var(--purple)"; el.style.transform = "translateY(2px)"; }}
-                onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.background = "var(--white)"; el.style.color = "var(--purple)"; el.style.borderColor = "var(--lavender-border)"; el.style.transform = "none"; }}>↓</div>
+                onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.background = "var(--white)"; el.style.color = "var(--purple)"; el.style.borderColor = "var(--lavender-border)"; el.style.transform = "none"; }}
+              >↓</div>
             </div>
             <p style={{ fontSize: "0.72rem", color: "var(--muted-light)", textAlign: "right", letterSpacing: "0.04em" }}>2025 · New chapters weekly</p>
           </div>
+
         </div>
       </div>
     </section>

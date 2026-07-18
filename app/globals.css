@@ -2412,3 +2412,32 @@ html, body {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   SPRINT 4A — Reader Auth & Profile
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Focus ring — accessible keyboard navigation ─────────────── */
+:focus-visible {
+  outline: 2px solid var(--purple);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ── Auth input focus ─────────────────────────────────────────── */
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+textarea:focus {
+  border-color: var(--purple-mid) !important;
+  box-shadow: 0 0 0 3px rgba(123, 63, 242, 0.1);
+}
+
+/* ── Profile avatar hover state ───────────────────────────────── */
+.avatar-ring {
+  transition: box-shadow 0.25s var(--ease-paper);
+}
+.avatar-ring:hover {
+  box-shadow: 0 0 0 3px var(--purple-light);
+}

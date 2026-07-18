@@ -23,8 +23,8 @@ export interface ChapterRow {
   slug: string;
   chapter_number: number;
   subtitle: string | null;
-  prologue: string | null;       /* Optional intro/epigraph before main content */
-  content: string;               /* JSON string: string[] of paragraphs */
+  prologue: string | null;
+  content: string;
   status: ChapterStatus;
   read_time: string | null;
   published_at: string | null;
@@ -37,11 +37,24 @@ export interface PoemRow {
   title: string;
   content: string;
   tags: string[];
-  image_url: string | null;   /* optional mood / artwork image */
+  image_url: string | null;
   status: PoemStatus;
   published_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+/* ── Sprint 4A: Reader profiles ──────────────────────────────────────────── */
+export interface ProfileRow {
+  id: string;               /* PK — same as auth.users.id */
+  user_id: string;          /* FK → auth.users.id          */
+  username: string;
+  display_name: string;
+  bio: string;
+  avatar_url: string | null;
+  joined_at: string;
+  updated_at: string;
+  /* Sprint 4C: books_read, bookmarks, reading_progress counters added here */
 }
 
 export interface Database {
@@ -61,6 +74,11 @@ export interface Database {
         Row: PoemRow;
         Insert: Omit<PoemRow, "id" | "created_at" | "updated_at">;
         Update: Partial<Omit<PoemRow, "id" | "created_at" | "updated_at">>;
+      };
+      profiles: {
+        Row: ProfileRow;
+        Insert: Omit<ProfileRow, "id" | "joined_at" | "updated_at">;
+        Update: Partial<Omit<ProfileRow, "id" | "user_id" | "joined_at">>;
       };
     };
     Views: {};

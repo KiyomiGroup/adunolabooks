@@ -1,8 +1,13 @@
 "use client";
-
+/*
+  ── TopNav — Sprint 4A ───────────────────────────────────────────────────────
+  NavAuthSection injected into nav-right, left of the existing "Start Reading"
+  CTA. All Sprint 1/2/3 structure preserved exactly.
+*/
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
+import NavAuthSection from "@/components/auth/NavAuthSection";
 
 const NAV_LINKS = [
   { label: "Home",    href: "/" },
@@ -11,12 +16,11 @@ const NAV_LINKS = [
   { label: "About",   href: "/about" },
 ] as const;
 
-// Side tabs: first 3 are nav links, 4th opens the menu overlay
 const SIDE_TABS = [
   { label: "Home",    href: "/" },
   { label: "Stories", href: "/stories" },
   { label: "Poems",   href: "/poems" },
-  { label: "Menu",    href: null },   // null = opens overlay
+  { label: "Menu",    href: null },
 ] as const;
 
 const MENU_ITEMS = [
@@ -27,24 +31,17 @@ const MENU_ITEMS = [
 ] as const;
 
 export default function TopNav() {
-  const pathname = usePathname();
+  const pathname  = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
-  const panelRef = useRef<HTMLDivElement>(null);
+  const panelRef  = useRef<HTMLDivElement>(null);
 
-  // Lock body scroll when menu is open
   useEffect(() => {
-    if (menuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow = menuOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
 
-  // Close menu on route change
   useEffect(() => { setMenuOpen(false); }, [pathname]);
 
-  // Close on Escape key
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMenuOpen(false); };
     window.addEventListener("keydown", onKey);
@@ -57,7 +54,7 @@ export default function TopNav() {
 
   const ctaLabel =
     isStoryDetail  ? "Start Reading →" :
-    isStoriesPage  ? "Browse →" :
+    isStoriesPage  ? "Browse →"         :
     "Browse Stories →";
 
   const ctaHref = isStoryDetail && slug
@@ -74,10 +71,11 @@ export default function TopNav() {
 
   return (
     <>
-      {/* ── Desktop: horizontal bookmark-ribbon nav ── */}
+      {/* ── Desktop nav ── */}
       <header className="top-nav-wrap">
         <nav className="top-nav" aria-label="Main navigation">
           <span className="nav-logo">AdunolaBooks</span>
+
           {NAV_LINKS.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -91,13 +89,17 @@ export default function TopNav() {
               </Link>
             );
           })}
+
+          {/* nav-right: auth section + existing CTA */}
           <div className="nav-right">
+            {/* Sprint 4A: reader auth state */}
+            <NavAuthSection />
             <Link href="/stories" className="nav-cta">Start Reading</Link>
           </div>
         </nav>
       </header>
 
-      {/* ── Mobile: side bookmark tabs (right edge) ── */}
+      {/* ── Mobile: side tabs ── */}
       <nav className="mobile-nav" aria-label="Mobile navigation">
         {SIDE_TABS.map((item) => {
           if (item.href === null) {
@@ -114,9 +116,7 @@ export default function TopNav() {
             );
           }
           const isActive =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.href);
+            item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
           return (
             <Link
               key={item.href}
@@ -130,25 +130,21 @@ export default function TopNav() {
         })}
       </nav>
 
-      {/* ── Mobile: bottom action bar ── */}
+      {/* ── Mobile: bottom bar ── */}
       <div className="mobile-bottom-bar">
         <Link href="/" className="mobile-home-btn" aria-label="Home">
           <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path
-              d="M3 9.5L10 3l7 6.5V17a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5Z"
-              stroke="var(--purple-dark)" strokeWidth="1.6" strokeLinejoin="round"
-            />
-            <path
-              d="M7.5 18v-5h5v5"
-              stroke="var(--purple-dark)" strokeWidth="1.6" strokeLinejoin="round"
-            />
+            <path d="M3 9.5L10 3l7 6.5V17a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5Z"
+              stroke="var(--purple-dark)" strokeWidth="1.6" strokeLinejoin="round" />
+            <path d="M7.5 18v-5h5v5"
+              stroke="var(--purple-dark)" strokeWidth="1.6" strokeLinejoin="round" />
           </svg>
         </Link>
         <Link href={ctaHref} className="mobile-cta-btn">{ctaLabel}</Link>
         <div className="mobile-page-counter" aria-hidden="true">{navIndex} / 4</div>
       </div>
 
-      {/* ── Mobile: full-screen menu overlay ── */}
+      {/* ── Mobile: full-screen overlay menu ── */}
       {menuOpen && (
         <div
           className={`mobile-menu-overlay ${menuOpen ? "is-open" : ""}`}
@@ -157,13 +153,11 @@ export default function TopNav() {
           aria-modal="true"
           aria-label="Navigation menu"
         >
-          {/* Panel — stops click propagation */}
           <div
             ref={panelRef}
             className="mobile-menu-panel"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header row */}
             <div className="mobile-menu-header">
               <span className="mobile-menu-logo">AdunolaBooks</span>
               <button
@@ -177,13 +171,10 @@ export default function TopNav() {
               </button>
             </div>
 
-            {/* Nav links — large serif, staggered in */}
             <nav className="mobile-menu-nav" aria-label="Menu navigation">
               {MENU_ITEMS.map((item, i) => {
                 const isActive =
-                  item.href === "/"
-                    ? pathname === "/"
-                    : pathname.startsWith(item.href);
+                  item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
                 return (
                   <Link
                     key={item.href}
@@ -199,18 +190,95 @@ export default function TopNav() {
                   </Link>
                 );
               })}
+
+              {/* Sprint 4A: auth links inside mobile menu */}
+              <MobileAuthLinks pathname={pathname} onClose={() => setMenuOpen(false)} />
             </nav>
 
-            {/* Footer */}
             <div className="mobile-menu-footer">
               <p className="mobile-menu-footer-label">Literary Fiction Platform</p>
-              <p className="mobile-menu-footer-copy">
-                Serialized stories, one chapter at a time.
-              </p>
+              <p className="mobile-menu-footer-copy">Serialized stories, one chapter at a time.</p>
             </div>
           </div>
         </div>
       )}
+    </>
+  );
+}
+
+/* ── Mobile auth links inside overlay ── */
+import { useEffect as useEffectMobile, useState as useStateMobile } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { readerSignOut } from "@/lib/actions/reader-auth";
+
+function MobileAuthLinks({ pathname, onClose }: { pathname: string; onClose: () => void }) {
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [ready, setReady]       = useState(false);
+
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data: { user } }) => {
+      setLoggedIn(!!user);
+      setReady(true);
+    });
+  }, [pathname]);
+
+  if (!ready) return null;
+
+  const dividerStyle: React.CSSProperties = {
+    borderTop: "1px solid var(--lavender-border)",
+    margin: "0.5rem 0",
+  };
+
+  const linkStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "1rem 0",
+    textDecoration: "none",
+    color: "var(--muted)",
+    fontFamily: "'DM Sans', sans-serif",
+    fontSize: "0.9rem",
+    fontWeight: 500,
+    letterSpacing: "0.02em",
+    borderTop: "1px solid var(--lavender-border)",
+    transition: "color 0.2s",
+  };
+
+  if (!loggedIn) {
+    return (
+      <>
+        <div style={dividerStyle} />
+        <Link href="/auth/login"  style={linkStyle} onClick={onClose}>Sign In</Link>
+        <Link href="/auth/signup" style={{ ...linkStyle, color: "var(--purple)" }} onClick={onClose}>
+          Create Account
+        </Link>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div style={dividerStyle} />
+      <Link href="/profile"      style={linkStyle} onClick={onClose}>My Profile</Link>
+      <Link href="/profile/edit" style={linkStyle} onClick={onClose}>Settings</Link>
+      <form action={readerSignOut}>
+        <button
+          type="submit"
+          style={{
+            ...linkStyle,
+            width: "100%",
+            background: "none",
+            border: "none",
+            borderTop: "1px solid var(--lavender-border)",
+            cursor: "pointer",
+            textAlign: "left",
+            padding: "1rem 0",
+          }}
+          onClick={onClose}
+        >
+          Sign Out
+        </button>
+      </form>
     </>
   );
 }

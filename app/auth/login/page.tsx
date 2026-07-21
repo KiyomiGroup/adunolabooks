@@ -8,10 +8,10 @@ import Banner from "@/components/auth/ErrorBanner";
 
 export const metadata: Metadata = { title: "Sign In — AdunolaBooks" };
 
-interface Props { searchParams: Promise<{ error?: string; reset?: string }> }
+interface Props { searchParams: Promise<{ error?: string; reset?: string; next?: string }> }
 
 export default async function LoginPage({ searchParams }: Props) {
-  const { error, reset } = await searchParams;
+  const { error, reset, next } = await searchParams;
 
   return (
     <AuthCard
@@ -30,6 +30,7 @@ export default async function LoginPage({ searchParams }: Props) {
       {error  && <Banner message={decodeURIComponent(error)} />}
 
       <form action={readerSignIn} style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>
+        {next && <input type="hidden" name="next" value={next} />}
         <AuthField label="Email" name="email" type="email" required autoComplete="email" />
         <AuthField label="Password" name="password" type="password" required autoComplete="current-password" />
 

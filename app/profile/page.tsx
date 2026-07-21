@@ -38,7 +38,7 @@ function StatPill({ value, label }: { value: string | number; label: string }) {
   );
 }
 
-export default async function ProfilePage({ searchParams }: { searchParams: Promise<{ saved?: string }> }) {
+export default async function ProfilePage({ searchParams }: { searchParams: Promise<{ saved?: string; welcome?: string }> }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
@@ -66,7 +66,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
     redirect("/profile");   /* reload so the new row is fetched */
   }
 
-  const { saved } = await searchParams;
+  const { saved, welcome } = await searchParams;
 
   const joinedLabel = new Date(profile.joined_at).toLocaleDateString("en-GB", {
     day: "numeric", month: "long", year: "numeric",
@@ -81,6 +81,33 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
         <div className="u-desktop-only">
           <section style={{ background: "var(--bg-soft)", borderBottom: "1px solid var(--lavender-border)", padding: "5rem 0 4rem" }}>
             <div className="container">
+              {welcome && (
+                <div className="fade-up" style={{ marginBottom: "1.75rem" }}>
+                  <p className="section-tag" style={{ marginBottom: "0.35rem" }}>
+                    Welcome back
+                  </p>
+                  <h2 style={{
+                    fontFamily: "'Cormorant Garamond', serif",
+                    fontSize: "1.6rem",
+                    fontWeight: 400,
+                    fontStyle: "italic",
+                    color: "var(--ink)",
+                    margin: "0 0 0.35rem",
+                    lineHeight: 1.2,
+                  }}>
+                    {profile.display_name || profile.username}.
+                  </h2>
+                  <p style={{
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: "0.9rem",
+                    color: "var(--muted)",
+                    margin: 0,
+                  }}>
+                    Continue your reading journey.
+                  </p>
+                </div>
+              )}
+
               {saved && (
                 <div style={{ marginBottom: "1.5rem" }}>
                   <Banner message="Profile updated." type="success" />
@@ -233,6 +260,17 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
 
         {/* Mobile — same content, stacked layout */}
         <div className="u-mobile-only" style={{ padding: "2.5rem 1.25rem 6rem" }}>
+          {welcome && (
+            <div className="fade-up" style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+              <p className="section-tag" style={{ marginBottom: "0.3rem" }}>Welcome back</p>
+              <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.35rem", fontStyle: "italic", fontWeight: 400, color: "var(--ink)", margin: "0 0 0.3rem" }}>
+                {profile.display_name || profile.username}.
+              </h2>
+              <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.84rem", color: "var(--muted)", margin: 0 }}>
+                Continue your reading journey.
+              </p>
+            </div>
+          )}
           {saved && <Banner message="Profile updated." type="success" />}
 
           {/* Avatar */}

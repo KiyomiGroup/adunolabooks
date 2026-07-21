@@ -80,11 +80,12 @@ export async function proxy(request: NextRequest) {
 
   /* ── Reader route protection ──────────────────────────────────────── */
   /*
-    /profile and /profile/edit require a signed-in reader.
+    /profile, /library, /settings require a signed-in reader.
     We preserve ?next= so the login page can redirect back after auth.
     Sprint 4C: add /reading-list, /bookmarks, /continue-reading here.
   */
-  const isProfileRoute = pathname.startsWith("/profile");
+  const READER_PROTECTED_PREFIXES = ["/profile", "/library", "/settings"];
+  const isProfileRoute = READER_PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
   if (isProfileRoute && !user) {
     const url = request.nextUrl.clone();

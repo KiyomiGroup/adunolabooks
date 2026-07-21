@@ -1,4 +1,5 @@
 import Link from "next/link";
+import MobileNavAvatar from "@/components/auth/MobileNavAvatar";
 
 export default function MobileBottomBar({
   ctaLabel,
@@ -49,6 +50,9 @@ export default function MobileBottomBar({
       <div className="mobile-page-counter" aria-label={counterLabel}>
         {counterLabel}
       </div>
+
+      {/* Sprint 4A.4: reader avatar shortcut — renders nothing when signed out */}
+      <MobileNavAvatar />
     </div>
   );
 }

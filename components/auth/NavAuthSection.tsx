@@ -2,58 +2,97 @@
 /*
   ── NavAuthSection ────────────────────────────────────────────────────────────
   Injected into TopNav's nav-right area.
-  Client component — reads auth state from Supabase browser client on mount.
-  Shows: "Sign In" + "Create Account" when logged out.
-  Shows: profile initial/avatar + "Sign Out" when logged in.
+  Client component — reads auth state from Supabase browser client on mount,
+  and stays in sync via onAuthStateChange (covers login/logout in another
+  tab, and token refresh/expiry).
 
-  Deliberately minimal — does not redesign the nav.
-  Sits to the left of the existing "Start Reading" CTA.
+  Logged out → "Sign In" + "Create Account".
+  Logged in  → avatar + name, opens a minimal account dropdown:
+               Profile · My Library (placeholder) · Settings (placeholder) · Logout.
+
+  Sprint 4A.4 — integration only. No new backend systems.
 */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { readerSignOut } from "@/lib/actions/reader-auth";
 import type { User } from "@supabase/supabase-js";
 
 export default function NavAuthSection() {
-  const [user, setUser] = useState<User | null>(null);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [displayName, setDisplayName] = useState<string>("");
-  const [ready, setReady] = useState(false);
+  const [user, setUser]               = useState<User | null>(null);
+  const [avatarUrl, setAvatarUrl]      = useState<string | null>(null);
+  const [displayName, setDisplayName]  = useState<string>("");
+  const [ready, setReady]              = useState(false);
+  const [open, setOpen]                = useState(false);
+
+  const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const supabase = createClient();
+    let cancelled = false;
 
-    const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+    const loadUser = async () => {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (cancelled) return;
 
-      if (user) {
-        const { data } = await (supabase.from("profiles") as any)
-          .select("avatar_url, display_name, username")
-          .eq("user_id", user.id)
-          .single();
-        if (data) {
-          setAvatarUrl(data.avatar_url);
-          setDisplayName(data.display_name || data.username || "");
+        /* A transient network/session error shouldn't flip a signed-in
+           reader to "logged out" — just stop showing the loading state
+           and keep whatever we last knew to be true. */
+        if (error) { setReady(true); return; }
+
+        setUser(user);
+
+        if (user) {
+          const { data } = await (supabase.from("profiles") as any)
+            .select("avatar_url, display_name, username")
+            .eq("user_id", user.id)
+            .single();
+          if (!cancelled && data) {
+            setAvatarUrl(data.avatar_url);
+            setDisplayName(data.display_name || data.username || "");
+          }
         }
+        setReady(true);
+      } catch {
+        if (!cancelled) setReady(true);
       }
-      setReady(true);
     };
 
-    init();
+    loadUser();
 
-    /* Keep in sync when auth state changes (login/logout in another tab) */
+    /* Keep in sync when auth state changes — login/logout in another tab,
+       or the session expiring. */
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (!session?.user) {
         setAvatarUrl(null);
         setDisplayName("");
+        setOpen(false);
       }
+      setReady(true);
     });
 
-    return () => subscription.unsubscribe();
+    return () => { cancelled = true; subscription.unsubscribe(); };
   }, []);
+
+  /* Close the dropdown on outside click or Escape */
+  useEffect(() => {
+    if (!open) return;
+
+    function onClick(e: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
 
   /* Don't flash anything until we know auth state */
   if (!ready) return null;
@@ -81,18 +120,59 @@ export default function NavAuthSection() {
           borderRadius: "5px",
           transition: "all 0.2s",
         }}>
-          Join
+          Create Account
         </Link>
       </div>
     );
   }
 
-  /* Logged-in state */
-  const initials = displayName[0]?.toUpperCase() ?? "R";
+  /* Logged-in state — avatar trigger + dropdown */
+  const initials = (displayName[0] ?? "R").toUpperCase();
+
+  const menuItemStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "0.75rem",
+    padding: "0.65rem 0.9rem",
+    fontFamily: "'DM Sans', sans-serif",
+    fontSize: "0.82rem",
+    fontWeight: 500,
+    color: "var(--ink-soft)",
+    textDecoration: "none",
+    borderRadius: "6px",
+    transition: "background 0.15s",
+  };
+
+  const disabledItemStyle: React.CSSProperties = {
+    ...menuItemStyle,
+    color: "var(--muted-light)",
+    cursor: "not-allowed",
+  };
+
+  const soonTagStyle: React.CSSProperties = {
+    fontFamily: "'DM Mono', monospace",
+    fontSize: "0.5rem",
+    letterSpacing: "0.1em",
+    textTransform: "uppercase",
+    color: "var(--muted-light)",
+    border: "1px solid var(--lavender-border)",
+    borderRadius: "4px",
+    padding: "0.15rem 0.4rem",
+  };
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", paddingBottom: "0.6rem" }}>
-      <Link href="/profile" style={{ display: "flex", alignItems: "center", gap: "0.55rem", textDecoration: "none" }}>
+    <div ref={wrapRef} style={{ position: "relative", paddingBottom: "0.6rem" }}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        style={{
+          display: "flex", alignItems: "center", gap: "0.55rem",
+          background: "none", border: "none", padding: 0, cursor: "pointer",
+        }}
+      >
         {avatarUrl ? (
           <img
             src={avatarUrl}
@@ -111,27 +191,72 @@ export default function NavAuthSection() {
         <span style={{ ...linkStyle, color: "var(--ink-soft)" }}>
           {displayName || "Profile"}
         </span>
-      </Link>
+        <svg width="9" height="9" viewBox="0 0 10 10" fill="none" aria-hidden="true" style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>
+          <path d="M1.5 3.5L5 7l3.5-3.5" stroke="var(--muted-light)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
 
-      <form action={readerSignOut} style={{ margin: 0 }}>
-        <button
-          type="submit"
+      {open && (
+        <div
+          role="menu"
+          aria-label="Account menu"
           style={{
-            fontFamily: "'DM Mono', monospace",
-            fontSize: "0.56rem",
-            letterSpacing: "0.16em",
-            textTransform: "uppercase",
-            color: "var(--muted-light)",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            padding: 0,
-            transition: "color 0.2s",
+            position: "absolute",
+            top: "calc(100% + 0.6rem)",
+            right: 0,
+            minWidth: "190px",
+            background: "var(--white)",
+            border: "1.5px solid var(--lavender-border)",
+            borderRadius: "10px",
+            boxShadow: "0 8px 32px var(--lavender-shadow)",
+            padding: "0.4rem",
+            zIndex: 300,
           }}
         >
-          Sign Out
-        </button>
-      </form>
+          <Link
+            href="/profile"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            style={menuItemStyle}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-soft)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+          >
+            Profile
+          </Link>
+
+          <span role="menuitem" aria-disabled="true" style={disabledItemStyle}>
+            My Library
+            <span style={soonTagStyle}>Soon</span>
+          </span>
+
+          <span role="menuitem" aria-disabled="true" style={disabledItemStyle}>
+            Settings
+            <span style={soonTagStyle}>Soon</span>
+          </span>
+
+          <div style={{ borderTop: "1px solid var(--lavender-border)", margin: "0.35rem 0" }} />
+
+          <form action={readerSignOut}>
+            <button
+              type="submit"
+              role="menuitem"
+              style={{
+                ...menuItemStyle,
+                width: "100%",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                textAlign: "left",
+                color: "var(--coral)",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-soft)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
+              Logout
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

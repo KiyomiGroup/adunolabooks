@@ -8,6 +8,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import NavAuthSection from "@/components/auth/NavAuthSection";
+import MobileNavAvatar from "@/components/auth/MobileNavAvatar";
 
 const NAV_LINKS = [
   { label: "Home",    href: "/" },
@@ -142,6 +143,8 @@ export default function TopNav() {
         </Link>
         <Link href={ctaHref} className="mobile-cta-btn">{ctaLabel}</Link>
         <div className="mobile-page-counter" aria-hidden="true">{navIndex} / 4</div>
+        {/* Sprint 4A.4: reader avatar shortcut — renders nothing when signed out */}
+        <MobileNavAvatar />
       </div>
 
       {/* ── Mobile: full-screen overlay menu ── */}
@@ -244,6 +247,23 @@ function MobileAuthLinks({ pathname, onClose }: { pathname: string; onClose: () 
     transition: "color 0.2s",
   };
 
+  const disabledLinkStyle: React.CSSProperties = {
+    ...linkStyle,
+    color: "var(--muted-light)",
+    cursor: "not-allowed",
+  };
+
+  const soonTagStyle: React.CSSProperties = {
+    fontFamily: "'DM Mono', monospace",
+    fontSize: "0.5rem",
+    letterSpacing: "0.1em",
+    textTransform: "uppercase",
+    color: "var(--muted-light)",
+    border: "1px solid var(--lavender-border)",
+    borderRadius: "4px",
+    padding: "0.15rem 0.4rem",
+  };
+
   if (!loggedIn) {
     return (
       <>
@@ -259,8 +279,13 @@ function MobileAuthLinks({ pathname, onClose }: { pathname: string; onClose: () 
   return (
     <>
       <div style={dividerStyle} />
-      <Link href="/profile"      style={linkStyle} onClick={onClose}>My Profile</Link>
-      <Link href="/profile/edit" style={linkStyle} onClick={onClose}>Settings</Link>
+      <Link href="/profile" style={linkStyle} onClick={onClose}>My Profile</Link>
+      <span style={disabledLinkStyle} aria-disabled="true">
+        My Library <span style={soonTagStyle}>Soon</span>
+      </span>
+      <span style={disabledLinkStyle} aria-disabled="true">
+        Settings <span style={soonTagStyle}>Soon</span>
+      </span>
       <form action={readerSignOut}>
         <button
           type="submit"
@@ -276,7 +301,7 @@ function MobileAuthLinks({ pathname, onClose }: { pathname: string; onClose: () 
           }}
           onClick={onClose}
         >
-          Sign Out
+          Logout
         </button>
       </form>
     </>

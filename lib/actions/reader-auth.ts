@@ -73,15 +73,25 @@ export async function readerSignIn(formData: FormData) {
 
   const email    = (formData.get("email")    as string).trim();
   const password =  formData.get("password") as string;
+  const nextRaw  = (formData.get("next")     as string | null) ?? "";
 
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    redirect(`/auth/login?error=${encodeURIComponent(error.message)}`);
+    const nextParam = nextRaw ? `&next=${encodeURIComponent(nextRaw)}` : "";
+    redirect(`/auth/login?error=${encodeURIComponent(error.message)}${nextParam}`);
   }
 
   revalidatePath("/", "layout");
-  redirect("/profile");
+
+  /* Only ever redirect to a same-site relative path — never an absolute
+     URL — to avoid turning "next" into an open-redirect vector. */
+  const destination = nextRaw.startsWith("/") && !nextRaw.startsWith("//")
+    ? nextRaw
+    : "/profile";
+
+  const separator = destination.includes("?") ? "&" : "?";
+  redirect(`${destination}${separator}welcome=1`);
 }
 
 /* ── Sign Out ───────────────────────────────────────────────────────────── */

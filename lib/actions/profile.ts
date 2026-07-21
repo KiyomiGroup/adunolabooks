@@ -39,67 +39,113 @@ export async function updateProfile(formData: FormData) {
   redirect("/profile?saved=true");
 }
 
-/* ── Upload avatar ───────────────────────────────────────────────────────── */
-export async function uploadAvatar(formData: FormData) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login");
+/* ── Save avatar URL (Sprint 4A.3) ───────────────────────────────────────────
+   Mirrors saveCoverUrl: the browser uploads the file directly to Supabase
+   Storage via XHR (see AvatarUploader), then this action's only job is to
+   write the resulting public URL into profiles.avatar_url. Never handles
+   file bytes itself — no server timeout, no stuck upload state.
+   Also best-effort deletes the reader's previous avatar file so storage
+   doesn't accumulate orphaned images. */
+export async function saveAvatarUrl(
+  publicUrl: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { success: false, error: "Not authenticated." };
+    }
 
-  const file = formData.get("avatar") as File;
-  if (!file || file.size === 0) {
-    redirect("/profile/edit?error=No+file+selected");
+    const { data: existing } = await (supabase.from("profiles") as any)
+      .select("avatar_url")
+      .eq("user_id", user.id)
+      .single();
+
+    const { error: dbError } = await (supabase.from("profiles") as any)
+      .update({ avatar_url: publicUrl })
+      .eq("user_id", user.id);
+
+    if (dbError) {
+      console.error("[saveAvatarUrl] db error:", dbError.message);
+      return { success: false, error: `Could not save avatar: ${dbError.message}` };
+    }
+
+    await cleanupOldAvatar(supabase, existing?.avatar_url, user.id);
+
+    try {
+      revalidatePath("/profile");
+      revalidatePath("/profile/edit");
+    } catch (e) {
+      console.warn("[saveAvatarUrl] revalidatePath warning:", e);
+    }
+
+    return { success: true };
+  } catch (err: any) {
+    console.error("[saveAvatarUrl] unexpected error:", err?.message);
+    return { success: false, error: err?.message ?? "Unexpected error." };
   }
-
-  /* Enforce 5MB limit */
-  if (file.size > 5 * 1024 * 1024) {
-    redirect("/profile/edit?error=Image+must+be+under+5MB");
-  }
-
-  const ext      = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-  const filePath = `${user.id}/avatar.${ext}`;
-
-  const { error: uploadError } = await supabase.storage
-    .from("reader-avatars")
-    .upload(filePath, file, { upsert: true, contentType: file.type });
-
-  if (uploadError) {
-    redirect(`/profile/edit?error=${encodeURIComponent(uploadError.message)}`);
-  }
-
-  const { data: { publicUrl } } = supabase.storage
-    .from("reader-avatars")
-    .getPublicUrl(filePath);
-
-  const { error: updateError } = await (supabase.from("profiles") as any)
-    .update({ avatar_url: publicUrl })
-    .eq("user_id", user.id);
-
-  if (updateError) {
-    redirect(`/profile/edit?error=${encodeURIComponent(updateError.message)}`);
-  }
-
-  revalidatePath("/profile");
-  revalidatePath("/profile/edit");
-  redirect("/profile?saved=true");
 }
 
 /* ── Remove avatar ───────────────────────────────────────────────────────── */
-export async function removeAvatar() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login");
+export async function removeAvatar(): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { success: false, error: "Not authenticated." };
+    }
 
-  const { error } = await (supabase.from("profiles") as any)
-    .update({ avatar_url: null })
-    .eq("user_id", user.id);
+    const { data: existing } = await (supabase.from("profiles") as any)
+      .select("avatar_url")
+      .eq("user_id", user.id)
+      .single();
 
-  if (error) {
-    redirect(`/profile/edit?error=${encodeURIComponent(error.message)}`);
+    const { error } = await (supabase.from("profiles") as any)
+      .update({ avatar_url: null })
+      .eq("user_id", user.id);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    await cleanupOldAvatar(supabase, existing?.avatar_url, user.id);
+
+    try {
+      revalidatePath("/profile");
+      revalidatePath("/profile/edit");
+    } catch (e) {
+      console.warn("[removeAvatar] revalidatePath warning:", e);
+    }
+
+    return { success: true };
+  } catch (err: any) {
+    console.error("[removeAvatar] unexpected error:", err?.message);
+    return { success: false, error: err?.message ?? "Unexpected error." };
   }
+}
 
-  revalidatePath("/profile");
-  revalidatePath("/profile/edit");
-  redirect("/profile?saved=true");
+/* Best-effort delete of a reader's previous avatar file. Scoped to the
+   reader's own storage folder ({user_id}/...) so this can never touch —
+   or even reference — another user's file. Failures are swallowed; a
+   stray orphaned file is harmless and should never block the save. */
+async function cleanupOldAvatar(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  oldUrl: string | null | undefined,
+  userId: string
+) {
+  if (!oldUrl) return;
+  const marker = "/reader-avatars/";
+  const idx = oldUrl.indexOf(marker);
+  if (idx === -1) return;
+
+  const path = oldUrl.slice(idx + marker.length).split("?")[0];
+  if (!path.startsWith(`${userId}/`)) return;
+
+  try {
+    await supabase.storage.from("reader-avatars").remove([path]);
+  } catch (e) {
+    console.warn("[cleanupOldAvatar] could not remove old avatar:", e);
+  }
 }
 
 /* ── Get current reader's profile (server) ───────────────────────────────── */

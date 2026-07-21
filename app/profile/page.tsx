@@ -97,6 +97,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
                       alt={`${profile.display_name || profile.username}'s avatar`}
                       width={96}
                       height={96}
+                      loading="lazy"
                       style={{
                         width: "96px",
                         height: "96px",
@@ -242,6 +243,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
                 alt=""
                 width={80}
                 height={80}
+                loading="lazy"
                 style={{ width: "80px", height: "80px", borderRadius: "50%", objectFit: "cover", border: "2px solid var(--purple-light)" }}
               />
             ) : (

@@ -27,7 +27,7 @@ export default async function EditProfilePage({ searchParams }: Props) {
     .single();
 
   const profile = data as ProfileRow | null;
-  if (!profile) redirect("/auth/login");
+  if (!profile) redirect("/profile"); /* profile page handles creation */
 
   const { error } = await searchParams;
 

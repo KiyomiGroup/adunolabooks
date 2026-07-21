@@ -49,7 +49,22 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
     .single();
 
   const profile = data as ProfileRow | null;
-  if (!profile) redirect("/auth/login");
+
+  /* Profile missing — shouldn't happen if the DB trigger is set up correctly,
+     but create it on-the-fly rather than bouncing the user to login. */
+  if (!profile) {
+    await (supabase.from("profiles") as any).insert({
+      user_id:      user.id,
+      username:     user.email!.split("@")[0]
+                      .toLowerCase()
+                      .replace(/[^a-z0-9_]/g, "")
+                      .slice(0, 24) || "reader"
+                      + "_" + user.id.replace(/-/g, "").slice(0, 6),
+      display_name: (user.user_metadata?.display_name as string) ?? "",
+      bio:          "",
+    });
+    redirect("/profile");   /* reload so the new row is fetched */
+  }
 
   const { saved } = await searchParams;
 

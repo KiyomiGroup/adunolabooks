@@ -54,7 +54,24 @@ export interface ProfileRow {
   avatar_url: string | null;
   joined_at: string;
   updated_at: string;
+  /* Sprint 4B: identifies the site author for the "Author" badge + pinning */
+  is_admin: boolean;
   /* Sprint 4C: books_read, bookmarks, reading_progress counters added here */
+}
+
+/* ── Sprint 4B: Chapter discussion ────────────────────────────────────────── */
+export interface CommentRow {
+  id: string;
+  chapter_id: string;
+  user_id: string;
+  parent_comment_id: string | null;
+  root_comment_id: string | null;
+  content: string;
+  is_pinned: boolean;
+  is_edited: boolean;
+  is_deleted: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Database {
@@ -79,6 +96,14 @@ export interface Database {
         Row: ProfileRow;
         Insert: Omit<ProfileRow, "id" | "joined_at" | "updated_at">;
         Update: Partial<Omit<ProfileRow, "id" | "user_id" | "joined_at">>;
+      };
+      comments: {
+        Row: CommentRow;
+        Insert: Omit<
+          CommentRow,
+          "id" | "root_comment_id" | "is_pinned" | "is_edited" | "is_deleted" | "created_at" | "updated_at"
+        >;
+        Update: Partial<Omit<CommentRow, "id" | "chapter_id" | "user_id" | "created_at">>;
       };
     };
     Views: {};

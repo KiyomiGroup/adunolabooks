@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import ReaderHeader from "@/components/ReaderHeader";
 import ChapterNav from "@/components/ChapterNav";
 import MobileBottomBar from "@/components/MobileBottomBar";
+import DiscussionSection from "@/components/comments/DiscussionSection";
 import { getChapterData } from "@/lib/stories";
 
 type Params = { slug: string; chapter: string };
@@ -131,6 +132,9 @@ export default async function ChapterReaderPage({ params }: { params: Promise<Pa
             <div className="reader-ornament" aria-hidden="true">
               <span>❧</span>
             </div>
+
+            {/* ── Discussion (Sprint 4B) ── */}
+            <DiscussionSection chapterId={ch.id} storySlug={story.slug} chapterNumber={ch.number} />
           </>
         ) : (
           <div className="reader-drafting">

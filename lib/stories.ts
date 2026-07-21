@@ -117,6 +117,7 @@ function chapterRowToChapter(row: ChapterRow) {
   const paragraphs = parseContent(row.content);
 
   return {
+    id: row.id,
     number: row.chapter_number,
     title: row.title,
     subtitle: row.subtitle ?? undefined,

@@ -8,7 +8,7 @@
   remain identical.
 */
 import { createClient } from "./server";
-import type { BookRow, ChapterRow, PoemRow } from "./types";
+import type { BookRow, ChapterRow, PoemRow, CommentRow, ProfileRow } from "./types";
 
 /* ── Books ──────────────────────────────────────────────────────────────── */
 
@@ -185,4 +185,108 @@ export async function getPoemById(id: string): Promise<PoemRow | null> {
     return null;
   }
   return data;
+}
+
+/* ── Discussion / Comments (Sprint 4B) ─────────────────────────────────────
+   comments.user_id references auth.users, not profiles directly, so we
+   can't ask Supabase to embed the profile automatically — instead we fetch
+   commenter profiles separately and merge them in JS. Keeps this file's
+   query shape consistent with the simple selects used everywhere else.
+*/
+
+export type CommentAuthor =
+  Pick<ProfileRow, "username" | "display_name" | "avatar_url" | "is_admin">;
+
+export type CommentWithAuthor = CommentRow & { author: CommentAuthor | null };
+
+const ROOT_COMMENTS_PAGE_SIZE = 10;
+
+async function attachAuthors(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  rows: CommentRow[]
+): Promise<CommentWithAuthor[]> {
+  if (rows.length === 0) return [];
+
+  const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
+  const { data: profiles, error } = await (supabase.from("profiles") as any)
+    .select("user_id, username, display_name, avatar_url, is_admin")
+    .in("user_id", userIds);
+
+  if (error) console.error("[attachAuthors]", error.message);
+
+  const byUserId = new Map<string, CommentAuthor>(
+    (profiles ?? []).map((p: any) => [
+      p.user_id,
+      { username: p.username, display_name: p.display_name, avatar_url: p.avatar_url, is_admin: p.is_admin },
+    ])
+  );
+
+  return rows.map((row) => ({ ...row, author: byUserId.get(row.user_id) ?? null }));
+}
+
+/* Total number of top-level (root) comments on a chapter — used to decide
+   whether the "Load more" control should render. */
+export async function getRootCommentCount(chapterId: string): Promise<number> {
+  const supabase = await createClient();
+  const { count, error } = await supabase
+    .from("comments")
+    .select("id", { count: "exact", head: true })
+    .eq("chapter_id", chapterId)
+    .is("parent_comment_id", null);
+
+  if (error) {
+    console.error("[getRootCommentCount]", error.message);
+    return 0;
+  }
+  return count ?? 0;
+}
+
+/*
+  One page of root comments, plus every reply beneath each of them
+  (any depth — the UI decides how much of that depth to indent).
+  Pinned comment always surfaces first, then oldest-first by default.
+*/
+export async function getCommentsPage(
+  chapterId: string,
+  offset: number,
+  limit: number = ROOT_COMMENTS_PAGE_SIZE
+): Promise<{ roots: CommentWithAuthor[]; replies: CommentWithAuthor[]; hasMore: boolean }> {
+  const supabase = await createClient();
+
+  const { data: rootRows, error: rootError } = await (supabase.from("comments") as any)
+    .select("*")
+    .eq("chapter_id", chapterId)
+    .is("parent_comment_id", null)
+    .order("is_pinned", { ascending: false })
+    .order("created_at", { ascending: true })
+    .range(offset, offset + limit - 1);
+
+  if (rootError) {
+    console.error("[getCommentsPage] roots:", rootError.message);
+    return { roots: [], replies: [], hasMore: false };
+  }
+
+  const roots: CommentRow[] = rootRows ?? [];
+  if (roots.length === 0) {
+    return { roots: [], replies: [], hasMore: false };
+  }
+
+  const rootIds = roots.map((r) => r.id);
+  const { data: replyRows, error: replyError } = await (supabase.from("comments") as any)
+    .select("*")
+    .eq("chapter_id", chapterId)
+    .in("root_comment_id", rootIds)
+    .order("created_at", { ascending: true });
+
+  if (replyError) console.error("[getCommentsPage] replies:", replyError.message);
+
+  const totalRoots = await getRootCommentCount(chapterId);
+  const hasMore = offset + roots.length < totalRoots;
+
+  const [rootsWithAuthors, repliesWithAuthors] = await Promise.all([
+    attachAuthors(supabase, roots),
+    attachAuthors(supabase, replyRows ?? []),
+  ]);
+
+  return { roots: rootsWithAuthors, replies: repliesWithAuthors, hasMore };
 }

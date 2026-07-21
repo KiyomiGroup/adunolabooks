@@ -10,6 +10,7 @@
 export type Accent = "purple" | "teal" | "coral" | "gold";
 
 export interface Chapter {
+  id: string;            /* DB row id — needed to scope discussion comments */
   number: number;
   title: string;
   subtitle?: string;

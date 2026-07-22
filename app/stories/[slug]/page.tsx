@@ -10,6 +10,7 @@ import BookmarkButton from "@/components/engagement/BookmarkButton";
 import { getAllStories, getStoryBySlug, getFirstAvailableChapter } from "@/lib/stories";
 import { createClient } from "@/lib/supabase/server";
 import { getBookmarkStatus } from "@/lib/supabase/queries";
+import { buildMetadata } from "@/lib/seo";
 
 type Params = { slug: string };
 
@@ -20,10 +21,12 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { slug } = await params;
   const story = await getStoryBySlug(slug);
   if (!story) return { title: "Story not found — AdunolaBooks" };
-  return {
+  return buildMetadata({
     title: `${story.title} — AdunolaBooks`,
     description: story.excerpt,
-  };
+    path: `/stories/${slug}`,
+    type: "article",
+  });
 }
 
 export default async function BookDetailPage({ params }: { params: Promise<Params> }) {

@@ -12,7 +12,7 @@ import {
 } from "@/components/engagement/LibraryCards";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "My Library — AdunolaBooks" };
+export const metadata: Metadata = { title: "My Library — AdunolaBooks", robots: { index: false, follow: false } };
 
 function SectionHeading({ tag, title }: { tag: string; title: string }) {
   return (

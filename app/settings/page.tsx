@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Settings — AdunolaBooks" };
+export const metadata: Metadata = { title: "Settings — AdunolaBooks", robots: { index: false, follow: false } };
 
 /* Route protection is also enforced in proxy.ts; this check is a fallback
    so the page never renders content for a signed-out visitor even if

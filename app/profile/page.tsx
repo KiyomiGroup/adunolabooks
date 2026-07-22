@@ -9,7 +9,7 @@ import { getMyLibrary } from "@/lib/stories";
 import Banner from "@/components/auth/ErrorBanner";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "My Profile — AdunolaBooks" };
+export const metadata: Metadata = { title: "My Profile — AdunolaBooks", robots: { index: false, follow: false } };
 
 /* Placeholder stat for Sprint 4C */
 function StatPill({ value, label }: { value: string | number; label: string }) {

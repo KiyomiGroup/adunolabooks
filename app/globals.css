@@ -2761,3 +2761,21 @@ textarea:focus {
   .library-card { padding: 0.75rem; }
   .library-card-cover { width: 56px; }
 }
+
+/* ── Skeleton loading blocks (Sprint 4E) ──────────────────────────────────
+   Subtle shimmer, reuses the existing lavender palette rather than
+   introducing new colours. Respects reduced-motion preferences. */
+@keyframes skeletonShimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  display: block;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--purple-light) 25%, var(--bg-soft) 50%, var(--purple-light) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; opacity: 0.6; }
+}

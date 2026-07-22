@@ -12,7 +12,7 @@ import AuthButton from "@/components/auth/AuthButton";
 import AvatarUploader from "@/components/auth/AvatarUploader";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Edit Profile — AdunolaBooks" };
+export const metadata: Metadata = { title: "Edit Profile — AdunolaBooks", robots: { index: false, follow: false } };
 
 interface Props { searchParams: Promise<{ error?: string }> }
 

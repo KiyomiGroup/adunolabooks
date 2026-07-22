@@ -9,6 +9,7 @@ import ReadingProgressTracker from "@/components/engagement/ReadingProgressTrack
 import { getChapterData } from "@/lib/stories";
 import { createClient } from "@/lib/supabase/server";
 import { getBookmarkStatus } from "@/lib/supabase/queries";
+import { buildMetadata } from "@/lib/seo";
 
 type Params = { slug: string; chapter: string };
 
@@ -18,10 +19,12 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { slug, chapter } = await params;
   const lookup = await getChapterData(slug, Number(chapter));
   if (!lookup) return { title: "Chapter not found — AdunolaBooks" };
-  return {
+  return buildMetadata({
     title: `${lookup.chapter.title} · ${lookup.story.title} — AdunolaBooks`,
     description: lookup.story.excerpt,
-  };
+    path: `/stories/${slug}/chapters/${chapter}`,
+    type: "article",
+  });
 }
 
 /*

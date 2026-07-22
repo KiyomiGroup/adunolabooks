@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import TopNav from "@/components/TopNav";
 import Footer from "@/components/Footer";
 import { getPoemById } from "@/lib/supabase/queries";
+import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -15,10 +16,12 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   if (!poem) return { title: "Poem not found — AdunolaBooks" };
 
   const firstLine = poem.content.split("\n").find((l) => l.trim()) ?? "";
-  return {
+  return buildMetadata({
     title: `${poem.title} — AdunolaBooks`,
     description: firstLine,
-  };
+    path: `/poems/${id}`,
+    type: "article",
+  });
 }
 
 /*

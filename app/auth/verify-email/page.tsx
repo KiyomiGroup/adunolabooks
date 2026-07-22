@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import AuthCard from "@/components/auth/AuthCard";
 
-export const metadata: Metadata = { title: "Verify Your Email — AdunolaBooks" };
+export const metadata: Metadata = { title: "Verify Your Email — AdunolaBooks", robots: { index: false, follow: false } };
 
 export default function VerifyEmailPage() {
   return (

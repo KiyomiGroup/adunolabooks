@@ -1,16 +1,33 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { SITE_URL } from "@/lib/site";
 
 /* ── Metadata ───────────────────────────────────────────────────────────── */
 export const metadata: Metadata = {
-  title: "AdunolaBooks — A Literary World",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "AdunolaBooks — A Literary World",
+    template: "%s",
+  },
   description:
     "Enter the page. Serialized fiction, poetry, and immersive storytelling.",
   openGraph: {
     title: "AdunolaBooks",
     description: "A living book you can enter.",
+    url: SITE_URL,
+    siteName: "AdunolaBooks",
     type: "website",
+    locale: "en_US",
+    /* TODO: add a real social preview image at /public/og-image.jpg, then
+       set images: ["/og-image.jpg"] here — left out rather than pointing
+       to an asset that doesn't exist yet. */
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "AdunolaBooks",
+    description: "A living book you can enter.",
+  },
+  robots: { index: true, follow: true },
 };
 
 /* ── Root Layout ────────────────────────────────────────────────────────── */

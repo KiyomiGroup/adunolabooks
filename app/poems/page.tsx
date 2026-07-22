@@ -5,13 +5,15 @@ import Footer from "@/components/Footer";
 import { WaveDown } from "@/components/WaveDivider";
 import { getAllPoems } from "@/lib/supabase/queries";
 import type { PoemRow } from "@/lib/supabase/types";
+import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "Poems — AdunolaBooks",
   description: "Poetry by Adunola — serialized verse, published one poem at a time.",
-};
+  path: "/poems",
+});
 
 /* ── Helpers ──────────────────────────────────────────────────────────────── */
 

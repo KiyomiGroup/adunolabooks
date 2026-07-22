@@ -6,7 +6,7 @@ import AuthField from "@/components/auth/AuthField";
 import AuthButton from "@/components/auth/AuthButton";
 import Banner from "@/components/auth/ErrorBanner";
 
-export const metadata: Metadata = { title: "Create Account — AdunolaBooks" };
+export const metadata: Metadata = { title: "Create Account — AdunolaBooks", robots: { index: false, follow: false } };
 
 interface Props { searchParams: Promise<{ error?: string }> }
 

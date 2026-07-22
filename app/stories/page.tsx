@@ -5,11 +5,13 @@ import StoriesGrid from "@/components/StoriesGrid";
 import MobileStoriesList from "@/components/MobileStoriesList";
 import { WaveDown } from "@/components/WaveDivider";
 import { getAllStories } from "@/lib/stories";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "Stories — AdunolaBooks",
   description: "Browse the full library of serialized fiction, one quiet shelf at a time.",
-};
+  path: "/stories",
+});
 
 /* Sprint 3: now dynamic — fetches from Supabase on each request */
 export const dynamic = "force-dynamic";

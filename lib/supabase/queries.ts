@@ -8,7 +8,7 @@
   remain identical.
 */
 import { createClient } from "./server";
-import type { BookRow, ChapterRow, PoemRow, CommentRow, ProfileRow } from "./types";
+import type { BookRow, ChapterRow, PoemRow, CommentRow, ProfileRow, BookmarkRow, ReadingProgressRow } from "./types";
 
 /* ── Books ──────────────────────────────────────────────────────────────── */
 
@@ -289,4 +289,88 @@ export async function getCommentsPage(
   ]);
 
   return { roots: rootsWithAuthors, replies: repliesWithAuthors, hasMore };
+}
+
+/* ── Reader engagement (Sprint 4C) ──────────────────────────────────────────
+   bookmarks + reading_progress. Every function here is scoped to the
+   currently-authenticated reader — there is no "get another user's
+   library" accessor, matching RLS which blocks that at the DB layer too.
+*/
+
+/* All of a reader's bookmarks, story-level and chapter-level combined.
+   Callers derive "is this book/chapter bookmarked" from this one query
+   rather than issuing a request per card, so a library page with many
+   books still costs a single round trip. */
+export async function getMyBookmarks(userId: string): Promise<BookmarkRow[]> {
+  const supabase = await createClient();
+  const { data, error } = await (supabase.from("bookmarks") as any)
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("[getMyBookmarks]", error.message);
+    return [];
+  }
+  return data ?? [];
+}
+
+/* A single reader's progress across every book they've started, most
+   recently read first. Powers "Continue Reading" and "Recently Read". */
+export async function getMyReadingProgress(userId: string): Promise<ReadingProgressRow[]> {
+  const supabase = await createClient();
+  const { data, error } = await (supabase.from("reading_progress") as any)
+    .select("*")
+    .eq("user_id", userId)
+    .order("last_read_at", { ascending: false });
+
+  if (error) {
+    console.error("[getMyReadingProgress]", error.message);
+    return [];
+  }
+  return data ?? [];
+}
+
+export async function getReadingProgressForBook(
+  userId: string,
+  bookId: string
+): Promise<ReadingProgressRow | null> {
+  const supabase = await createClient();
+  const { data, error } = await (supabase.from("reading_progress") as any)
+    .select("*")
+    .eq("user_id", userId)
+    .eq("book_id", bookId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[getReadingProgressForBook]", error.message);
+    return null;
+  }
+  return data ?? null;
+}
+
+/* Both the story-level and (optionally) chapter-level bookmark state for
+   one reader on one book, in a single query — used by the story detail
+   page and chapter reader page to light up BookmarkButton correctly. */
+export async function getBookmarkStatus(
+  userId: string,
+  bookId: string,
+  chapterId?: string | null
+): Promise<{ storyBookmarked: boolean; chapterBookmarked: boolean }> {
+  const supabase = await createClient();
+  const { data, error } = await (supabase.from("bookmarks") as any)
+    .select("chapter_id")
+    .eq("user_id", userId)
+    .eq("book_id", bookId);
+
+  if (error) {
+    console.error("[getBookmarkStatus]", error.message);
+    return { storyBookmarked: false, chapterBookmarked: false };
+  }
+
+  const rows: { chapter_id: string | null }[] = data ?? [];
+  const storyBookmarked = rows.some((r) => r.chapter_id === null);
+  const chapterBookmarked = !!chapterId && rows.some((r) => r.chapter_id === chapterId);
+
+  return { storyBookmarked, chapterBookmarked };
 }

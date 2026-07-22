@@ -74,6 +74,26 @@ export interface CommentRow {
   updated_at: string;
 }
 
+/* ── Sprint 4C: Reader engagement ─────────────────────────────────────────── */
+export interface BookmarkRow {
+  id: string;
+  user_id: string;
+  book_id: string;
+  chapter_id: string | null; /* null = story-level bookmark */
+  created_at: string;
+}
+
+export interface ReadingProgressRow {
+  id: string;
+  user_id: string;
+  book_id: string;
+  current_chapter_id: string | null;
+  last_read_at: string;
+  progress_percentage: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -104,6 +124,16 @@ export interface Database {
           "id" | "root_comment_id" | "is_pinned" | "is_edited" | "is_deleted" | "created_at" | "updated_at"
         >;
         Update: Partial<Omit<CommentRow, "id" | "chapter_id" | "user_id" | "created_at">>;
+      };
+      bookmarks: {
+        Row: BookmarkRow;
+        Insert: Omit<BookmarkRow, "id" | "created_at">;
+        Update: Partial<Omit<BookmarkRow, "id" | "user_id" | "created_at">>;
+      };
+      reading_progress: {
+        Row: ReadingProgressRow;
+        Insert: Omit<ReadingProgressRow, "id" | "created_at" | "updated_at">;
+        Update: Partial<Omit<ReadingProgressRow, "id" | "user_id" | "book_id" | "created_at">>;
       };
     };
     Views: {};

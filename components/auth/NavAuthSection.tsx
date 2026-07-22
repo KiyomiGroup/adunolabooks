@@ -224,10 +224,16 @@ export default function NavAuthSection() {
             Profile
           </Link>
 
-          <span role="menuitem" aria-disabled="true" style={disabledItemStyle}>
+          <Link
+            href="/library"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            style={menuItemStyle}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-soft)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+          >
             My Library
-            <span style={soonTagStyle}>Soon</span>
-          </span>
+          </Link>
 
           <span role="menuitem" aria-disabled="true" style={disabledItemStyle}>
             Settings

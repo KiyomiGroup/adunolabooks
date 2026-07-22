@@ -280,9 +280,7 @@ function MobileAuthLinks({ pathname, onClose }: { pathname: string; onClose: () 
     <>
       <div style={dividerStyle} />
       <Link href="/profile" style={linkStyle} onClick={onClose}>My Profile</Link>
-      <span style={disabledLinkStyle} aria-disabled="true">
-        My Library <span style={soonTagStyle}>Soon</span>
-      </span>
+      <Link href="/library" style={linkStyle} onClick={onClose}>My Library</Link>
       <span style={disabledLinkStyle} aria-disabled="true">
         Settings <span style={soonTagStyle}>Soon</span>
       </span>

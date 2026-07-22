@@ -6,7 +6,10 @@ import Footer from "@/components/Footer";
 import BookCover from "@/components/BookCover";
 import ChapterList from "@/components/ChapterList";
 import MobileBookHero from "@/components/MobileBookHero";
+import BookmarkButton from "@/components/engagement/BookmarkButton";
 import { getAllStories, getStoryBySlug, getFirstAvailableChapter } from "@/lib/stories";
+import { createClient } from "@/lib/supabase/server";
+import { getBookmarkStatus } from "@/lib/supabase/queries";
 
 type Params = { slug: string };
 
@@ -32,13 +35,22 @@ export default async function BookDetailPage({ params }: { params: Promise<Param
   const firstChapter = getFirstAvailableChapter(story);
   const continuing = story.readingProgress > 0 && story.readingProgress < 100;
 
+  /* Sprint 4C: bookmark state + subtle "reading / bookmarked" indicators. */
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const signedIn = !!user;
+  const bookmarkStatus = user
+    ? await getBookmarkStatus(user.id, String(story.id))
+    : { storyBookmarked: false, chapterBookmarked: false };
+  const { storyBookmarked } = bookmarkStatus;
+
   return (
     <>
       <TopNav />
 
       <main>
         {/* ── Mobile: decoupled book hero ── */}
-        <MobileBookHero story={story} />
+        <MobileBookHero story={story} storyBookmarked={storyBookmarked} signedIn={signedIn} />
 
         {/* ── Desktop: cinematic hero + manuscript index (hidden on mobile/tablet) ── */}
         <div className="u-desktop-only">
@@ -59,6 +71,8 @@ export default async function BookDetailPage({ params }: { params: Promise<Param
                   <div className="genre-tag-row">
                     <span className="genre-tag">{story.genre}</span>
                     <span className="genre-tag">{story.status}</span>
+                    {continuing && <span className="engagement-indicator is-reading">Reading</span>}
+                    {storyBookmarked && <span className="engagement-indicator is-bookmarked">Bookmarked</span>}
                   </div>
 
                   <h1 className="book-hero-title font-display">{story.title}</h1>
@@ -85,13 +99,20 @@ export default async function BookDetailPage({ params }: { params: Promise<Param
                     </div>
                   </div>
 
-                  {firstChapter && (
-                    <div className="book-hero-cta-row">
+                  <div className="book-hero-cta-row" style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+                    {firstChapter && (
                       <Link href={`/stories/${story.slug}/chapters/${firstChapter.number}`} className="btn-primary">
                         {continuing ? "Continue Reading →" : "Start Reading →"}
                       </Link>
-                    </div>
-                  )}
+                    )}
+                    <BookmarkButton
+                      bookId={String(story.id)}
+                      storySlug={story.slug}
+                      initialBookmarked={storyBookmarked}
+                      signedIn={signedIn}
+                      labels={{ onLabel: "Bookmarked", offLabel: "Bookmark Story" }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

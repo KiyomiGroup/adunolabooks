@@ -5,6 +5,7 @@ import TopNav from "@/components/TopNav";
 import Footer from "@/components/Footer";
 import { createClient } from "@/lib/supabase/server";
 import type { ProfileRow } from "@/lib/supabase/types";
+import { getMyLibrary } from "@/lib/stories";
 import Banner from "@/components/auth/ErrorBanner";
 
 export const dynamic = "force-dynamic";
@@ -67,6 +68,15 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
   }
 
   const { saved, welcome } = await searchParams;
+
+  /* Sprint 4C: real numbers instead of the "—" placeholders. */
+  const library = await getMyLibrary(user.id);
+  const booksRead = library.completed.length;
+  const chaptersRead = [...library.currentlyReading, ...library.completed].reduce(
+    (sum, entry) => sum + (entry.progressPercentage >= 100 ? entry.totalChapters : entry.currentChapterNumber ?? 0),
+    0
+  );
+  const bookmarksCount = library.bookmarkedStories.length + library.bookmarkedChapters.length;
 
   const joinedLabel = new Date(profile.joined_at).toLocaleDateString("en-GB", {
     day: "numeric", month: "long", year: "numeric",
@@ -227,7 +237,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
             </div>
           </section>
 
-          {/* Stats — Sprint 4C: replace placeholder values with real data */}
+          {/* Stats — Sprint 4C: real values from reading_progress + bookmarks */}
           <section style={{ padding: "3.5rem 0" }}>
             <div className="container">
               <p className="section-tag" style={{ marginBottom: "1.5rem" }}>Reading Journey</p>
@@ -237,21 +247,21 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
                 flexWrap: "wrap",
                 alignItems: "flex-start",
               }}>
-                {/* Sprint 4C: pull from reading_progress, bookmarks tables */}
-                <StatPill value="—" label="Books Read" />
-                <StatPill value="—" label="Chapters Read" />
-                <StatPill value="—" label="Bookmarks" />
+                <StatPill value={booksRead} label="Books Read" />
+                <StatPill value={chaptersRead} label="Chapters Read" />
+                <StatPill value={bookmarksCount} label="Bookmarks" />
               </div>
-              <p style={{
-                fontFamily: "'DM Mono', monospace",
-                fontSize: "0.56rem",
-                letterSpacing: "0.14em",
-                color: "var(--muted-light)",
-                marginTop: "1rem",
-                opacity: 0.7,
+              <Link href="/library" style={{
+                display: "inline-block",
+                marginTop: "1.5rem",
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: "0.8rem",
+                fontWeight: 500,
+                color: "var(--purple)",
+                textDecoration: "none",
               }}>
-                Reading stats coming soon.
-              </p>
+                View my library →
+              </Link>
             </div>
           </section>
 
@@ -310,8 +320,13 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
             </Link>
           </div>
           <div style={{ display: "flex", justifyContent: "center", gap: "2rem" }}>
-            <StatPill value="—" label="Books Read" />
-            <StatPill value="—" label="Bookmarks" />
+            <StatPill value={booksRead} label="Books Read" />
+            <StatPill value={bookmarksCount} label="Bookmarks" />
+          </div>
+          <div style={{ display: "flex", justifyContent: "center", marginTop: "1.5rem" }}>
+            <Link href="/library" style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "0.82rem", fontWeight: 500, color: "var(--purple)", textDecoration: "none" }}>
+              View my library →
+            </Link>
           </div>
         </div>
       </main>

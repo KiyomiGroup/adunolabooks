@@ -4,7 +4,11 @@ import ReaderHeader from "@/components/ReaderHeader";
 import ChapterNav from "@/components/ChapterNav";
 import MobileBottomBar from "@/components/MobileBottomBar";
 import DiscussionSection from "@/components/comments/DiscussionSection";
+import BookmarkButton from "@/components/engagement/BookmarkButton";
+import ReadingProgressTracker from "@/components/engagement/ReadingProgressTracker";
 import { getChapterData } from "@/lib/stories";
+import { createClient } from "@/lib/supabase/server";
+import { getBookmarkStatus } from "@/lib/supabase/queries";
 
 type Params = { slug: string; chapter: string };
 
@@ -70,6 +74,15 @@ export default async function ChapterReaderPage({ params }: { params: Promise<Pa
 
   const { story, chapter: ch, prevChapter, nextChapter } = lookup;
 
+  /* Sprint 4C: chapter bookmark state + silent progress tracking. */
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const signedIn = !!user;
+  const bookmarkStatus = user
+    ? await getBookmarkStatus(user.id, String(story.id), ch.id)
+    : { storyBookmarked: false, chapterBookmarked: false };
+  const { chapterBookmarked } = bookmarkStatus;
+
   const nextAvailable  = nextChapter?.status === "available";
   const mobileCtaLabel = nextAvailable ? "Next Chapter →" : "Back to Story →";
   const mobileCtaHref  = nextAvailable
@@ -87,9 +100,32 @@ export default async function ChapterReaderPage({ params }: { params: Promise<Pa
       />
 
       <article className="reader-content-wrap fade-up">
+        {/* Sprint 4C: silent — renders nothing, just records this chapter view */}
+        {ch.status === "available" && (
+          <ReadingProgressTracker
+            bookId={String(story.id)}
+            chapterId={ch.id}
+            chapterNumber={ch.number}
+            totalChapters={story.chapters.length}
+            signedIn={signedIn}
+          />
+        )}
+
         {/* ── Chapter heading ── */}
         <div className="reader-meta-block">
-          <p className="reader-eyebrow">{story.title}</p>
+          <div className="reader-eyebrow-row">
+            <p className="reader-eyebrow">{story.title}</p>
+            {ch.status === "available" && (
+              <BookmarkButton
+                bookId={String(story.id)}
+                chapterId={ch.id}
+                storySlug={story.slug}
+                initialBookmarked={chapterBookmarked}
+                variant="icon"
+                signedIn={signedIn}
+              />
+            )}
+          </div>
           <h1 className="reader-title font-display">{ch.title}</h1>
           {ch.subtitle && <p className="reader-subtitle">{ch.subtitle}</p>}
 

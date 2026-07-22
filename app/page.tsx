@@ -6,6 +6,7 @@ import PoetryPreview from "@/components/PoetryPreview";
 import Newsletter from "@/components/Newsletter";
 import Footer from "@/components/Footer";
 import MobileHomePage from "@/components/MobileHomePage";
+import HomePersonalization from "@/components/engagement/HomePersonalization";
 import { WaveDown, WaveUp } from "@/components/WaveDivider";
 import { getAllStories } from "@/lib/stories";
 
@@ -20,6 +21,9 @@ export default async function Home() {
     <>
       <TopNav />
       <main>
+        {/* Sprint 4C: renders nothing for signed-out visitors */}
+        <HomePersonalization />
+
         {/* ── Mobile / tablet: featured book card + library list ── */}
         {featured && <MobileHomePage featured={featured} rest={rest} />}
 
